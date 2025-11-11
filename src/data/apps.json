@@ -8,7 +8,13 @@
     "iconColor": "#FF6B9D",
     "logoUrl": "https://aniyomi.org/img/logo-128px.png",
     "keywords": ["tachiyomi fork", "ani streaming"],
-    "supportedExtensions": ["kohiden", "yuzono", "secozzi", "claudemirovsky", "hollow"],
+    "supportedExtensions": [
+      "kohiden",
+      "yuzono",
+      "secozzi",
+      "claudemirovsky",
+      "hollow"
+    ],
     "lastUpdated": "2025-10-15",
     "githubUrl": "https://github.com/aniyomiorg/aniyomi",
     "officialSite": "https://aniyomi.org",
@@ -26,7 +32,8 @@
         "url": "https://aniyomi.org/docs/guides/getting-started",
         "description": "Essential information to help you get set up with Aniyomi"
       }
-    ]
+    ],
+    "isActive": true
   },
   {
     "id": "mihon",
@@ -37,7 +44,13 @@
     "iconColor": "#4A90E2",
     "logoUrl": "https://avatars.githubusercontent.com/mihonapp",
     "keywords": ["tachiyomi", "mihonapp"],
-    "supportedExtensions": ["kohiden", "yuzono", "secozzi", "claudemirovsky", "hollow"],
+    "supportedExtensions": [
+      "kohiden",
+      "yuzono",
+      "secozzi",
+      "claudemirovsky",
+      "hollow"
+    ],
     "lastUpdated": "2025-10-14",
     "githubUrl": "https://github.com/mihonapp/mihon",
     "officialSite": "https://mihon.app",
@@ -48,7 +61,8 @@
         "url": "https://mihon.app/docs/guides/getting-started",
         "description": "Official quick start that covers installation and first-time configuration."
       }
-    ]
+    ],
+    "isActive": true
   },
   {
     "id": "dantotsu",
@@ -62,28 +76,29 @@
     "supportedExtensions": ["kohiden"],
     "lastUpdated": "2025-10-12",
     "githubUrl": "https://github.com/itsmechinmoy/dantotsu-updater",
-    "discordUrl":"https://discord.gg/4HPZ5nAWwM"
+    "discordUrl": "https://discord.gg/4HPZ5nAWwM",
+    "isActive": true
   },
   {
-  "id": "dartotsu",
-  "name": "Dartotsu",
-  "contentTypes": ["Manga", "Anime", "Light Novel"],
-  "description": "Successor to Dantotsu. Rebuilt in Flutter for speed, cross‑platform support, and modern elegance.",
-  "platforms": ["Android", "iOS", "Windows", "Mac", "Linux"],
-  "iconColor": "#00cc99",
-  "logoUrl": "https://avatars.githubusercontent.com/aayush2622",
-  "keywords": ["Dantotsu fork", "best app"],
-  "supportedExtensions": ["kodjodevf"],
-  "lastUpdated": "2025-08-15",
-  "githubUrl": "https://github.com/aayush2622/Dartotsu",
-  "officialSite": "https://github.com/aayush2622/Dartotsu",
-  "discordUrl": "https://discord.gg/eyQdCpdubF"
-
-},
+    "id": "dartotsu",
+    "name": "Dartotsu",
+    "contentTypes": ["Manga", "Anime", "Light Novel"],
+    "description": "Successor to Dantotsu. Rebuilt in Flutter for speed, cross‑platform support, and modern elegance.",
+    "platforms": ["Android", "iOS", "Windows", "Mac", "Linux"],
+    "iconColor": "#00cc99",
+    "logoUrl": "https://avatars.githubusercontent.com/aayush2622",
+    "keywords": ["Dantotsu fork", "best app"],
+    "supportedExtensions": ["kodjodevf"],
+    "lastUpdated": "2025-08-15",
+    "githubUrl": "https://github.com/aayush2622/Dartotsu",
+    "officialSite": "https://github.com/aayush2622/Dartotsu",
+    "discordUrl": "https://discord.gg/eyQdCpdubF",
+    "isActive": true
+  },
   {
     "id": "mangayomi",
     "name": "Mangayomi",
-    "contentTypes": ["Manga", "Light Novel","Anime"],
+    "contentTypes": ["Manga", "Light Novel", "Anime"],
     "description": "A free and open‑source app for reading manga, novels, and watching anime — available on all major platforms.",
     "platforms": ["Windows", "Mac", "Android", "iOS", "Linux"],
     "iconColor": "#FF8A65",
@@ -92,7 +107,8 @@
     "supportedExtensions": ["kohiden", "yuzono", "secozzi"],
     "lastUpdated": "2025-10-10",
     "githubUrl": "https://github.com/kodjodevf/mangayomi",
-    "discordUrl": "https://discord.com/invite/EjfBuYahsP"
+    "discordUrl": "https://discord.com/invite/EjfBuYahsP",
+    "isActive": true
   },
   {
     "id": "tachiyomi",
@@ -106,7 +122,8 @@
     "supportedExtensions": [],
     "lastUpdated": "2024-01-13",
     "githubUrl": "https://github.com/tachiyomiorg",
-    "discordUrl":"https://discord.com/invite/tachiyomi"
+    "discordUrl": "https://discord.com/invite/tachiyomi",
+    "isActive": false
   },
   {
     "id": "kotatsu",
@@ -120,8 +137,9 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-10-16",
     "githubUrl": "https://github.com/KotatsuApp/Kotatsu",
-    "discordUrl":"https://discord.gg/NNJ5RgVBC5",
-    "officialSite":"https://kotatsu.app/"
+    "discordUrl": "https://discord.gg/NNJ5RgVBC5",
+    "officialSite": "https://kotatsu.app/",
+    "isActive": false
   },
   {
     "id": "cloudstream",
@@ -135,7 +153,8 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-10-13",
     "githubUrl": "https://github.com/recloudstream/cloudstream",
-    "discordUrl":"https://discord.gg/5Hus6fM"
+    "discordUrl": "https://discord.gg/5Hus6fM",
+    "isActive": true
   },
   {
     "id": "migu",
@@ -149,7 +168,8 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-10-11",
     "githubUrl": "https://github.com/NoCrypt/Migu",
-    "officialSite":"https://miguapp.pages.dev/"
+    "officialSite": "https://miguapp.pages.dev/",
+    "isActive": false
   },
   {
     "id": "tachiyomi-sy",
@@ -163,8 +183,9 @@
     "supportedExtensions": ["kohiden", "yuzono"],
     "lastUpdated": "2025-10-14",
     "githubUrl": "https://github.com/jobobby04/TachiyomiSY",
-    "officialSite":"https://mihon.app/forks/TachiyomiSY",
-    "discordUrl":"https://discord.gg/mihon"
+    "officialSite": "https://mihon.app/forks/TachiyomiSY",
+    "discordUrl": "https://discord.gg/mihon",
+    "isActive": true
   },
   {
     "id": "tachiyomi-j2k",
@@ -177,9 +198,10 @@
     "keywords": ["mihon fork", "j2k"],
     "supportedExtensions": ["kohiden"],
     "lastUpdated": "2025-10-13",
-    "githubUrl":"https://github.com/Jays2Kings/tachiyomiJ2K",
-    "officialSite":"https://mihon.app/forks/TachiyomiJ2K",
-    "discordUrl":"https://discord.gg/mihon"
+    "githubUrl": "https://github.com/Jays2Kings/tachiyomiJ2K",
+    "officialSite": "https://mihon.app/forks/TachiyomiJ2K",
+    "discordUrl": "https://discord.gg/mihon",
+    "isActive": true
   },
   {
     "id": "yokai",
@@ -194,7 +216,8 @@
     "lastUpdated": "2025-10-12",
     "githubUrl": "https://github.com/null2264/yokai",
     "discordUrl": "https://discord.com/invite/mihon",
-    "officialSite":"https://mihon.app/forks/Yokai"
+    "officialSite": "https://mihon.app/forks/Yokai",
+    "isActive": true
   },
   {
     "id": "komikku",
@@ -209,7 +232,8 @@
     "lastUpdated": "2025-10-10",
     "githubUrl": "https://github.com/komikku-app/komikku",
     "discordUrl": "https://discord.gg/85jB7V5AJR",
-    "officialSite": "https://mihon.app/forks/Komikku/"
+    "officialSite": "https://mihon.app/forks/Komikku/",
+    "isActive": true
   },
   {
     "id": "neko",
@@ -223,7 +247,8 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-10-09",
     "githubUrl": "https://github.com/nekomangaorg/Neko",
-    "discordUrl":"https://discord.gg/4vmK42QuKG"
+    "discordUrl": "https://discord.gg/4vmK42QuKG",
+    "isActive": true
   },
   {
     "id": "perfect-viewer",
@@ -236,7 +261,8 @@
     "keywords": ["local reader", "cbz"],
     "supportedExtensions": [],
     "lastUpdated": "2025-09-28",
-    "officialSite":"https://play.google.com/store/apps/details?id=com.rookiestudio.perfectviewer"
+    "officialSite": "https://play.google.com/store/apps/details?id=com.rookiestudio.perfectviewer",
+    "isActive": null
   },
   {
     "id": "kuro-reader",
@@ -249,8 +275,9 @@
     "keywords": ["local", "cloud sync"],
     "supportedExtensions": [],
     "lastUpdated": "2025-09-25",
-    "officialSite":"https://kurotoshiro.dev/",
-    "githubUrl":"https://github.com/VandersonQk/KuroReaderReleases/"
+    "officialSite": "https://kurotoshiro.dev/",
+    "githubUrl": "https://github.com/VandersonQk/KuroReaderReleases/",
+    "isActive": true
   },
   {
     "id": "cdisplayex",
@@ -263,8 +290,9 @@
     "keywords": ["comic reader"],
     "supportedExtensions": [],
     "lastUpdated": "2025-09-20",
-    "discordUrl":"https://discord.gg/GKbezMyGG2",
-    "officialSite":"https://www.cdisplayex.com/"
+    "discordUrl": "https://discord.gg/GKbezMyGG2",
+    "officialSite": "https://www.cdisplayex.com/",
+    "isActive": null
   },
   {
     "id": "ln-reader",
@@ -278,8 +306,9 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-10-11",
     "githubUrl": "https://github.com/LNReader/lnreader",
-    "officialSite":"https://www.lnreader.app/",
-    "discordUrl":"https://discord.gg/QdcWN4MD63"
+    "officialSite": "https://www.lnreader.app/",
+    "discordUrl": "https://discord.gg/QdcWN4MD63",
+    "isActive": true
   },
   {
     "id": "quicknovel",
@@ -292,9 +321,9 @@
     "keywords": ["novels", "reader", "downloader"],
     "supportedExtensions": [],
     "lastUpdated": "2025-10-07",
-    "discordUrl":"https://discord.gg/5Hus6fM",
-    "githubUrl":"https://github.com/LagradOst/QuickNovel"
-
+    "discordUrl": "https://discord.gg/5Hus6fM",
+    "githubUrl": "https://github.com/LagradOst/QuickNovel",
+    "isActive": true
   },
   {
     "id": "shosetsu",
@@ -307,9 +336,10 @@
     "keywords": ["novels", "light novel"],
     "supportedExtensions": [],
     "lastUpdated": "2025-10-05",
-    "discordUrl":"https://discord.gg/ttSX7gB",
-    "officialSite":"https://shosetsu.app/",
-    "githubUrl":"https://gitlab.com/shosetsuorg/shosetsu"
+    "discordUrl": "https://discord.gg/ttSX7gB",
+    "officialSite": "https://shosetsu.app/",
+    "githubUrl": "https://gitlab.com/shosetsuorg/shosetsu",
+    "isActive": true
   },
   {
     "id": "moon-reader",
@@ -322,7 +352,8 @@
     "keywords": ["ebook", "tts"],
     "supportedExtensions": [],
     "lastUpdated": "2025-10-03",
-    "officialSite":"https://play.google.com/store/apps/details?id=com.flyersoft.moonreader"
+    "officialSite": "https://play.google.com/store/apps/details?id=com.flyersoft.moonreader",
+    "isActive": null
   },
   {
     "id": "nineanimator",
@@ -335,7 +366,8 @@
     "keywords": ["ios", "streaming"],
     "supportedExtensions": [],
     "lastUpdated": "2025-10-09",
-    "githubUrl":"https://github.com/SuperMarcus/NineAnimator"
+    "githubUrl": "https://github.com/SuperMarcus/NineAnimator",
+    "isActive": false
   },
   {
     "id": "paperback",
@@ -348,9 +380,10 @@
     "keywords": ["ios", "extensions"],
     "supportedExtensions": [],
     "lastUpdated": "2025-10-08",
-    "officialSite":"https://paperback.moe/",
-    "discordUrl":"https://discord.com/invite/jWCSt5zXFZ",
-    "githubUrl":"https://github.com/Paperback-iOS/app"
+    "officialSite": "https://paperback.moe/",
+    "discordUrl": "https://discord.com/invite/jWCSt5zXFZ",
+    "githubUrl": "https://github.com/Paperback-iOS/app",
+    "isActive": true
   },
   {
     "id": "aidoku",
@@ -365,7 +398,8 @@
     "lastUpdated": "2025-10-07",
     "githubUrl": "https://github.com/Aidoku/Aidoku",
     "discordUrl": "https://discord.gg/kh2PYT8V8d",
-    "officialSite":"https://aidoku.app/"
+    "officialSite": "https://aidoku.app/",
+    "isActive": true
   },
   {
     "id": "tachimanga",
@@ -379,8 +413,8 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-10-06",
     "githubUrl": "https://github.com/tachimanga",
-    "officialSite":"https://tachimanga.app/",
-    "discordUrl":"https://discord.gg/8aMcdYdaBz",
+    "officialSite": "https://tachimanga.app/",
+    "discordUrl": "https://discord.gg/8aMcdYdaBz",
     "tutorials": [
       {
         "title": "Tachimanga Quick Start Guide",
@@ -388,7 +422,8 @@
         "url": "https://tachimanga.app/help/guides/get-started.html#reading-from-local-source",
         "description": "Official quick start that covers installation and first-time configuration."
       }
-    ]
+    ],
+    "isActive": true
   },
   {
     "id": "suwatte",
@@ -401,9 +436,10 @@
     "keywords": ["ios", "reader"],
     "supportedExtensions": [],
     "lastUpdated": "2025-10-05",
-    "officialSite":"https://www.suwatte.app/",
-    "discordUrl":"https://discord.gg/8wmkXsT6h5",
-    "githubUrl":"https://github.com/suwatte"
+    "officialSite": "https://www.suwatte.app/",
+    "discordUrl": "https://discord.gg/8wmkXsT6h5",
+    "githubUrl": "https://github.com/Suwatte/Suwatte",
+    "isActive": true
   },
   {
     "id": "stremio",
@@ -415,9 +451,10 @@
     "logoUrl": "https://www.google.com/s2/favicons?sz=128&domain=stremio.com",
     "keywords": ["streaming", "tv", "cross platform"],
     "supportedExtensions": ["stremio-addon"],
-    "officialSite":"https://www.stremio.com/",
-    "discordUrl":"https://blog.stremio.com/",
-    "tutorials":[
+    "officialSite": "https://www.stremio.com/",
+    "discordUrl": "https://blog.stremio.com/",
+    "githubUrl": "https://github.com/Stremio",
+    "tutorials": [
       {
         "title": "A Quick Video Guide",
         "type": "guide",
@@ -430,7 +467,8 @@
         "url": "https://bestdroidplayer.com/streaming-apps/stremio-guide-get-started/#How_to_Use_Stremio",
         "description": "This guide will look through everything you should know."
       }
-    ]
+    ],
+    "isActive": true
   },
   {
     "id": "seanime",
@@ -444,8 +482,9 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-10-11",
     "officialSite": "https://seanime.app/",
-    "githubUrl":"https://github.com/5rahim/seanime",
-    "discordUrl":"https://discord.gg/Sbr7Phzt6m"
+    "githubUrl": "https://github.com/5rahim/seanime",
+    "discordUrl": "https://discord.gg/Sbr7Phzt6m",
+    "isActive": true
   },
   {
     "id": "toru",
@@ -458,7 +497,8 @@
     "keywords": ["torrent", "player"],
     "supportedExtensions": [],
     "lastUpdated": "2025-10-09",
-    "githubUrl":"https://github.com/sweetbbak/toru"
+    "githubUrl": "https://github.com/sweetbbak/toru",
+    "isActive": true
   },
   {
     "id": "suwayomi",
@@ -471,8 +511,9 @@
     "keywords": ["server", "tachidesk"],
     "supportedExtensions": [],
     "lastUpdated": "2025-10-07",
-    "githubUrl":"https://github.com/Suwayomi/Suwayomi-Server",
-    "discordUrl":"https://discord.gg/DDZdqZWaHA"
+    "githubUrl": "https://github.com/Suwayomi/Suwayomi-Server",
+    "discordUrl": "https://discord.gg/DDZdqZWaHA",
+    "isActive": true
   },
   {
     "id": "yacreader",
@@ -485,9 +526,10 @@
     "keywords": ["library", "cbz", "cbr"],
     "supportedExtensions": [],
     "lastUpdated": "2025-10-06",
-    "officialSite":"https://www.yacreader.com/",
-    "githubUrl":"https://github.com/YACReader/yacreader",
-    "discordUrl":"https://x.com/yacreader"
+    "officialSite": "https://www.yacreader.com/",
+    "githubUrl": "https://github.com/YACReader/yacreader",
+    "discordUrl": "https://x.com/yacreader",
+    "isActive": true
   },
   {
     "id": "koodo-reader",
@@ -500,8 +542,9 @@
     "keywords": ["ebook", "desktop"],
     "supportedExtensions": [],
     "lastUpdated": "2025-10-05",
-    "officialSite":"https://koodoreader.com",
-    "githubUrl":"https://github.com/koodo-reader/koodo-reader"
+    "officialSite": "https://koodoreader.com",
+    "githubUrl": "https://github.com/koodo-reader/koodo-reader",
+    "isActive": true
   },
   {
     "id": "thorium",
@@ -514,8 +557,9 @@
     "keywords": ["epub", "accessibility"],
     "supportedExtensions": [],
     "lastUpdated": "2025-10-04",
-    "officialSite":"https://www.edrlab.org/software/thorium-reader/",
-    "githubUrl":"https://github.com/edrlab/thorium-reader"
+    "officialSite": "https://www.edrlab.org/software/thorium-reader/",
+    "githubUrl": "https://github.com/edrlab/thorium-reader",
+    "isActive": true
   },
   {
     "id": "anikku",
@@ -530,14 +574,15 @@
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/komikku-app/anikku",
     "officialSite": "https://anikku-app.github.io/",
-    "discordUrl": "https://discord.gg/85jB7V5AJR"
+    "discordUrl": "https://discord.gg/85jB7V5AJR",
+    "isActive": true
   },
   {
     "id": "anymex",
     "name": "AnymeX",
     "contentTypes": ["Anime", "Manga", "Light Novel"],
     "description": "Multi-service client for anime, manga, novels, and more.",
-    "platforms": ["Android", "iOS", "Windows","Linux","Mac", "Web"],
+    "platforms": ["Android", "iOS", "Windows", "Linux", "Mac", "Web"],
     "iconColor": "#FF6B9D",
     "logoUrl": "https://github.com/RyanYuuki/AnymeX/raw/main/assets/images/logo.png",
     "keywords": ["anime", "manga", "novels"],
@@ -545,7 +590,8 @@
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/RyanYuuki/AnymeX",
     "officialSite": "https://anymex.vercel.app/",
-    "discordUrl": "https://discord.gg/5gAHhMvTcx"
+    "discordUrl": "https://discord.gg/5gAHhMvTcx",
+    "isActive": true
   },
   {
     "id": "animiru",
@@ -560,7 +606,8 @@
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/quickdesh/Animiru",
     "officialSite": "https://aniyomi.org/forks/Animiru/",
-    "discordUrl": "https://discord.gg/yDuHDMwxhv"
+    "discordUrl": "https://discord.gg/yDuHDMwxhv",
+    "isActive": true
   },
   {
     "id": "comicrack-ce",
@@ -574,14 +621,15 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/maforget/ComicRackCE",
-    "discordUrl": "https://www.reddit.com/r/comicrackusers/comments/e0l28i/documents_and_scripts/"
+    "discordUrl": "https://www.reddit.com/r/comicrackusers/comments/e0l28i/documents_and_scripts/",
+    "isActive": true
   },
   {
     "id": "hayase",
     "name": "Hayase",
     "contentTypes": ["Anime"],
     "description": "Android and Android TV streaming app with addon-driven architecture.",
-    "platforms": ["Android","iOS","Windows","Linux","Mac"],
+    "platforms": ["Android", "iOS", "Windows", "Linux", "Mac"],
     "iconColor": "#FF6B9D",
     "logoUrl": "https://avatars.githubusercontent.com/hayase-app",
     "keywords": ["anime", "streaming", "android"],
@@ -589,7 +637,8 @@
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/hayase-app",
     "officialSite": "https://hayase.watch/",
-    "discordUrl": ""
+    "discordUrl": "",
+    "isActive": true
   },
   {
     "id": "koreader",
@@ -603,7 +652,8 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/koreader/koreader",
-    "officialSite": "https://koreader.rocks/"
+    "officialSite": "https://koreader.rocks/",
+    "isActive": true
   },
   {
     "id": "legado",
@@ -618,9 +668,10 @@
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/gedoor/legado",
     "officialSite": "https://gedoor.github.io/",
-    "discordUrl": "https://discord.gg/VtUfRyzRXn"
+    "discordUrl": "https://discord.gg/VtUfRyzRXn",
+    "isActive": true
   },
-   {
+  {
     "id": "opencomic",
     "name": "OpenComic",
     "contentTypes": ["Manga"],
@@ -633,7 +684,8 @@
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/ollm/OpenComic",
     "officialSite": "https://opencomic.app/",
-    "discordUrl": ""
+    "discordUrl": "",
+    "isActive": true
   },
   {
     "id": "panels",
@@ -647,20 +699,22 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-01-15",
     "officialSite": "https://panels.app/",
-    "discordUrl": "https://discord.gg/bQ6NMecYFn"
+    "discordUrl": "https://discord.gg/bQ6NMecYFn",
+    "isActive": null
   },
   {
     "id": "shiru",
     "name": "Shiru",
     "contentTypes": ["Anime"],
     "description": "Lightweight open-source anime client.",
-    "platforms": ["Android","Windows","Linux","Mac"],
+    "platforms": ["Android", "Windows", "Linux", "Mac"],
     "iconColor": "#FF6B9D",
     "logoUrl": "https://avatars.githubusercontent.com/RockinChaos",
     "keywords": ["anime", "android", "lightweight", "plugins"],
     "supportedExtensions": [],
     "lastUpdated": "2025-01-15",
-    "githubUrl": "https://github.com/RockinChaos/Shiru"
+    "githubUrl": "https://github.com/RockinChaos/Shiru",
+    "isActive": true
   },
   {
     "id": "yomikiru",
@@ -673,7 +727,8 @@
     "keywords": ["manga", "comics", "desktop", "epub"],
     "supportedExtensions": [],
     "lastUpdated": "2025-01-15",
-    "githubUrl": "https://github.com/mienaiyami/yomikiru"
+    "githubUrl": "https://github.com/mienaiyami/yomikiru",
+    "isActive": true
   },
   {
     "id": "tachiyomi-az",
@@ -688,7 +743,8 @@
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/az4521/TachiyomiAZ",
     "officialSite": "https://mihon.app/forks/TachiyomiAZ/",
-    "discordUrl": "https://discord.gg/mihon"
+    "discordUrl": "https://discord.gg/mihon",
+    "isActive": true
   },
   {
     "id": "tachiyomi-at",
@@ -702,7 +758,8 @@
     "supportedExtensions": ["keiyoushi"],
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/mannu691/TachiyomiAT",
-    "discordUrl": "https://discord.com/invite/rkvXfVPRdq"
+    "discordUrl": "https://discord.com/invite/rkvXfVPRdq",
+    "isActive": true
   },
   {
     "id": "animetail",
@@ -716,7 +773,8 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/Animetailapp/Animetail",
-    "discordUrl": "https://discord.gg/fvskrQZb9j"
+    "discordUrl": "https://discord.gg/fvskrQZb9j",
+    "isActive": true
   },
   {
     "id": "readest",
@@ -731,7 +789,8 @@
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/readest/readest",
     "officialSite": "https://readest.com",
-    "discordUrl": "https://discord.gg/gntyVNk3BJ"
+    "discordUrl": "https://discord.gg/gntyVNk3BJ",
+    "isActive": true
   },
   {
     "id": "sora",
@@ -745,7 +804,8 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/cranci1/Sora",
-    "discordUrl": "https://discord.gg/XR3SrmUbpd"
+    "discordUrl": "https://discord.gg/XR3SrmUbpd",
+    "isActive": true
   },
   {
     "id": "unyo",
@@ -758,7 +818,8 @@
     "keywords": ["anime", "manga", "desktop"],
     "supportedExtensions": [],
     "lastUpdated": "2025-01-15",
-    "githubUrl": "https://github.com/K3vinb5/Unyo"
+    "githubUrl": "https://github.com/K3vinb5/Unyo",
+    "isActive": true
   },
   {
     "id": "totoro",
@@ -772,7 +833,8 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/insomniachi/Totoro",
-    "discordUrl": "https://discord.gg/KHxdxuCjhX"
+    "discordUrl": "https://discord.gg/KHxdxuCjhX",
+    "isActive": true
   },
   {
     "id": "zenshin",
@@ -786,7 +848,8 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/hitarth-gg/zenshin",
-    "officialSite": "https://hitarth-gg.github.io/zenshin-website"
+    "officialSite": "https://hitarth-gg.github.io/zenshin-website",
+    "isActive": true
   },
   {
     "id": "houdoku",
@@ -800,43 +863,46 @@
     "supportedExtensions": [],
     "lastUpdated": "2025-01-15",
     "githubUrl": "https://github.com/xgi/houdoku",
-    "officialSite": "https://houdoku.org"
+    "officialSite": "https://houdoku.org",
+    "isActive": true
   },
   {
-  "id": "anilab",
-  "name": "Anilab",
-  "contentTypes": ["Anime"],
-  "description": "A free anime player that lets you stream and organize titles with options for favorites, downloads, and daily updates.",
-  "platforms": ["Android", "iOS"],
-  "iconColor": "#ff0000",
-  "logoUrl": "https://anilab.to/images/logo@2x.svg",
-  "keywords": ["free", "anime"],
-  "officialSite": "https://anilab.to/"
+    "id": "anilab",
+    "name": "Anilab",
+    "contentTypes": ["Anime"],
+    "description": "A free anime player that lets you stream and organize titles with options for favorites, downloads, and daily updates.",
+    "platforms": ["Android", "iOS"],
+    "iconColor": "#ff0000",
+    "logoUrl": "https://anilab.to/images/logo@2x.svg",
+    "keywords": ["free", "anime"],
+    "officialSite": "https://anilab.to/",
+    "isActive": null
   },
   {
-  "id": "miru-app",
-  "name": "Miru App",
-  "contentTypes": ["Anime"],
-  "description": "Free and open source Multi-functional application that supports video, comics, novels extended source for Android, Windows, Web.",
-  "platforms": ["Android", "Windows", "Web"],
-  "iconColor": "#FFBFB5",
-  "logoUrl": "https://github.com/miru-project/miru-app/raw/dev/assets/icon/logo.png",
-  "keywords": ["free", "anime"],
-  "officialSite":"https://miru.js.org/en/",
-  "githubUrl":"https://github.com/miru-project/miru-app"
+    "id": "miru-app",
+    "name": "Miru App",
+    "contentTypes": ["Anime"],
+    "description": "Free and open source Multi-functional application that supports video, comics, novels extended source for Android, Windows, Web.",
+    "platforms": ["Android", "Windows", "Web"],
+    "iconColor": "#FFBFB5",
+    "logoUrl": "https://github.com/miru-project/miru-app/raw/dev/assets/icon/logo.png",
+    "keywords": ["free", "anime"],
+    "officialSite": "https://miru.js.org/en/",
+    "githubUrl": "https://github.com/miru-project/miru-app",
+    "isActive": true
   },
   {
-  "id": "kotatsu-redo",
-  "name": "Kotatsu Redo",
-  "contentTypes": ["Manga"],
-  "description": "Fork of Kotatsu with a goal to maitain existing features and sources.",
-  "platforms": ["Android"],
-  "iconColor": "#66BB6A",
-  "logoUrl": "https://github.com/Kotatsu-Redo/Kotatsu-Redo/blob/devel/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp?raw=true",
-  "keywords": ["local library", "kotatsu"],
-  "supportedExtensions": [],
-  "githubUrl":"https://github.com/Kotatsu-Redo/Kotatsu-Redo",
-  "discordUrl":"https://discord.gg/77PJztUXc"
+    "id": "kotatsu-redo",
+    "name": "Kotatsu Redo",
+    "contentTypes": ["Manga"],
+    "description": "Fork of Kotatsu with a goal to maitain existing features and sources.",
+    "platforms": ["Android"],
+    "iconColor": "#66BB6A",
+    "logoUrl": "https://github.com/Kotatsu-Redo/Kotatsu-Redo/blob/devel/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp?raw=true",
+    "keywords": ["local library", "kotatsu"],
+    "supportedExtensions": [],
+    "githubUrl": "https://github.com/Kotatsu-Redo/Kotatsu-Redo",
+    "discordUrl": "https://discord.gg/77PJztUXc",
+    "isActive": true
   }
 ]
-
