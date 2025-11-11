@@ -35,7 +35,7 @@
     "name": "Mihon",
     "status": "active",
     "contentTypes": ["Manga"],
-    "description": "Free and open-source manga reader for Android. Fork of Tachiyomi with enhanced features.",
+    "description": "An app for manga and anime.",
     "platforms": ["Android"],
     "iconColor": "#4A90E2",
     "logoUrl": "https://avatars.githubusercontent.com/mihonapp",
