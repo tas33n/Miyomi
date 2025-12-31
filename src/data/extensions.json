@@ -574,7 +574,8 @@
     "website": "https://www.lnreader.app/plugins",
     "github": "https://github.com/LNReader/lnreader-plugins",
     "supportedApps": [
-      "ln-reader"
+      "ln-reader",
+      "ireader"
     ],
     "info": "Plugin repository for LNReader app.",
     "keywords": [
@@ -620,5 +621,26 @@
     "types": [
       "Manga"
     ]
+  },
+  {
+    "id": "ireader-extensions",
+    "name": "IReader Extensions",
+    "logoUrl": "https://raw.githubusercontent.com/IReaderorg/IReader-website/refs/heads/main/public/icon-512x512.png",
+    "types": [
+      "Novel"
+    ],
+    "region": "ALL",
+    "accentColor": "#3A84C2",
+    "github": "https://github.com/IReaderorg/IReader-extensions",
+    "supportedApps": [
+      "ireader"
+    ],
+    "info": "Official extension repository for IReader novel reader.",
+    "keywords": [
+      "ireader",
+      "light novel",
+      "extensions"
+    ],
+    "lastUpdated": "2025-12-31"
   }
 ]

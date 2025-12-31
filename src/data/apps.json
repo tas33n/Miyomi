@@ -1584,38 +1584,57 @@
     ]
   },
   {
-    "id": "IReader",
+    "id": "ireader",
     "downloads": 37759,
     "name": "IReader",
     "status": "active",
-    "author": "IReader",
+    "author": "IReaderorg",
     "contentTypes": [
       "Light Novel"
     ],
-    "description": "Free and open source novel reader for Android and Desktop.",
+    "description": "A free and open-source cross-platform novel reader with support for multiple sources through extensions and JavaScript plugins. Features offline reading, library management, dark mode, customizable themes, and AI Text-to-Speech on desktop.",
     "platforms": [
       "Android",
-      "Windows"
+      "Windows",
+      "Mac",
+      "Linux"
     ],
-    "logoUrl": "https://ireaderorg.netlify.app/logo.png",
+    "logoUrl": "https://raw.githubusercontent.com/IReaderorg/IReader-website/refs/heads/main/public/icon-512x512.png",
     "keywords": [
-      "Light Novel",
-      "android"
+      "light novel",
+      "novel reader",
+      "javascript plugins",
+      "lnreader sources",
+      "offline reading",
+      "tts",
+      "cross platform"
     ],
     "supportedExtensions": [
-      "extension-id-1",
-      "extension-id-2"
+      "ireader-extensions",
+      "lnreader-plugins"
     ],
-    "lastUpdated": "2025-12-30",
+    "lastUpdated": "2025-12-31",
     "githubUrl": "https://github.com/IReaderorg/IReader",
     "officialSite": "https://ireaderorg.netlify.app/",
     "discordUrl": "https://discord.com/invite/HBU6zD8c5v",
     "tutorials": [
       {
-        "title": "Tutorial Title",
+        "title": "Getting Started",
         "type": "guide",
-        "url": "https://ireaderorg.netlify.app/help/",
-        "description": "Tutorial description"
+        "url": "https://github.com/IReaderorg/IReader/blob/master/docs/wiki/Getting-Started.md",
+        "description": "Essential guide to help you get set up with IReader"
+      },
+      {
+        "title": "Installing Extensions",
+        "type": "guide",
+        "url": "https://github.com/IReaderorg/IReader/blob/master/docs/wiki/Installing-Extensions.md",
+        "description": "Learn how to install and manage extensions"
+      },
+      {
+        "title": "JavaScript Plugin System",
+        "type": "guide",
+        "url": "https://github.com/IReaderorg/IReader/blob/master/docs/js-plugin-system.md",
+        "description": "Guide to using JavaScript plugins including LNReader sources"
       }
     ]
   },
