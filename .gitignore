@@ -5,3 +5,5 @@ build
 .wrangler
 bun.lockb
 backups/
+.env.production
+.env.local
