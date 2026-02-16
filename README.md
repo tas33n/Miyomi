@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/tas33n/Miyomi/main/public/icons/icon-192.png" width="40px"> Miyomi v3.0 
+# <img src="https://raw.githubusercontent.com/tas33n/Miyomi/main/public/icons/icon-192.png" width="35px"> Miyomi v3.0 
 
 A modern, community-run website for discovering **manga**, **anime**, and **light novel** apps, extensions, guides, and other resources — curated from open-source communities to make them easier to find for everyone.
 
