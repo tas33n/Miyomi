@@ -1,0 +1,8 @@
+# wrangler.toml
+name = "miyomi"
+#pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "miyomi-db"
+database_id = "0d70949a-e439-41fc-a0a1-78b99d17b9af"
