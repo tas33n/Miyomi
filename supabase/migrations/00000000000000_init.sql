@@ -674,6 +674,10 @@ CREATE POLICY "System can insert logs" ON public.admin_logs FOR INSERT TO servic
 WITH
     CHECK (true);
 
+CREATE POLICY "Admins can insert logs" ON public.admin_logs FOR INSERT TO authenticated
+WITH
+    CHECK (public.is_admin (auth.uid ()));
+
 -- admin_sessions
 CREATE POLICY "Admin can view own sessions" ON public.admin_sessions FOR
 SELECT USING (
@@ -696,6 +700,10 @@ SELECT TO authenticated USING (
 CREATE POLICY "System can insert sessions" ON public.admin_sessions FOR INSERT TO service_role
 WITH
     CHECK (true);
+
+CREATE POLICY "Admins can insert sessions" ON public.admin_sessions FOR INSERT TO authenticated
+WITH
+    CHECK (public.is_admin (auth.uid ()));
 
 -- ============================================
 -- 10. STORAGE
