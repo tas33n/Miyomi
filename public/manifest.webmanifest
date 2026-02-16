@@ -1,0 +1,38 @@
+{
+  "name": "Miyomi",
+  "short_name": "Miyomi",
+  "description": "Community-driven hub for apps, extensions, and guides.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/maskable-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-banner.png",
+      "sizes": "1280x686",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Miyomi landing page"
+    }
+  ]
+}

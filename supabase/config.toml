@@ -1,0 +1,27 @@
+project_id = "qijruodreazuicbcyhvk"
+
+# Public-facing functions (no JWT required, auth handled internally or not needed)
+[functions.vote]
+verify_jwt = false
+
+[functions.submit-content]
+verify_jwt = false
+
+[functions.list-apps]
+verify_jwt = false
+
+[functions.feedback]
+verify_jwt = false
+
+# Admin functions — JWT verification enforced
+[functions.seed-data]
+verify_jwt = true
+
+[functions.bootstrap-admin]
+verify_jwt = false
+
+[functions.manage-admin]
+verify_jwt = true
+
+[functions.update-app-meta]
+verify_jwt = false
