@@ -1,6 +1,6 @@
 # wrangler.toml
 name = "miyomi"
-#pages_build_output_dir = "dist"
+pages_build_output_dir = "dist"
 
 [[d1_databases]]
 binding = "DB"
