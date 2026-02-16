@@ -551,169 +551,58 @@ SELECT TO authenticated USING (
     );
 
 CREATE POLICY "Super admins can manage all roles" ON public.user_roles FOR ALL TO authenticated USING (
-    EXISTS (
-        SELECT 1
-        FROM public.user_roles ur
-        WHERE
-            ur.user_id = (
-                SELECT auth.uid ()
-            )
-            AND ur.role = 'super_admin'
-    )
+    public.has_role (auth.uid (), 'super_admin')
 )
 WITH
     CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.user_roles ur
-            WHERE
-                ur.user_id = (
-                    SELECT auth.uid ()
-                )
-                AND ur.role = 'super_admin'
-        )
+        public.has_role (auth.uid (), 'super_admin')
     );
 
 -- admins
 CREATE POLICY "Admins can read admin profiles" ON public.admins FOR
-SELECT USING (
-        EXISTS (
-            SELECT 1
-            FROM public.admins a
-            WHERE
-                a.user_id = (
-                    SELECT auth.uid ()
-                )
-        )
-    );
+SELECT USING (public.is_admin (auth.uid ()));
 
 CREATE POLICY "Super admins can manage admins" ON public.admins FOR ALL TO authenticated USING (
-    EXISTS (
-        SELECT 1
-        FROM public.user_roles
-        WHERE
-            user_id = (
-                SELECT auth.uid ()
-            )
-            AND role = 'super_admin'
-    )
+    public.has_role (auth.uid (), 'super_admin')
 )
 WITH
     CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.user_roles
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-                AND role = 'super_admin'
-        )
+        public.has_role (auth.uid (), 'super_admin')
     );
 
 -- apps
 CREATE POLICY "Public can read approved apps" ON public.apps FOR
 SELECT USING (status = 'approved');
 
-CREATE POLICY "Admins can manage apps" ON public.apps FOR ALL TO authenticated USING (
-    EXISTS (
-        SELECT 1
-        FROM public.admins
-        WHERE
-            user_id = (
-                SELECT auth.uid ()
-            )
-    )
-)
+CREATE POLICY "Admins can manage apps" ON public.apps FOR ALL TO authenticated USING (public.is_admin (auth.uid ()))
 WITH
-    CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.admins
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-        )
-    );
+    CHECK (public.is_admin (auth.uid ()));
 
 -- extensions
 CREATE POLICY "Public can read approved extensions" ON public.extensions FOR
 SELECT USING (status = 'approved');
 
-CREATE POLICY "Admins can manage extensions" ON public.extensions FOR ALL TO authenticated USING (
-    EXISTS (
-        SELECT 1
-        FROM public.admins
-        WHERE
-            user_id = (
-                SELECT auth.uid ()
-            )
-    )
-)
+CREATE POLICY "Admins can manage extensions" ON public.extensions FOR ALL TO authenticated USING (public.is_admin (auth.uid ()))
 WITH
-    CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.admins
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-        )
-    );
+    CHECK (public.is_admin (auth.uid ()));
 
 -- guides
 CREATE POLICY "Public can read approved guides" ON public.guides FOR
-SELECT USING (status = 'approved');
-
-CREATE POLICY "Admins can manage guides" ON public.guides FOR ALL TO authenticated USING (
-    EXISTS (
-        SELECT 1
-        FROM public.admins
-        WHERE
-            user_id = (
-                SELECT auth.uid ()
-            )
-    )
-)
-WITH
-    CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.admins
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-        )
+SELECT USING (
+        status IN ('approved', 'published')
     );
+
+CREATE POLICY "Admins can manage guides" ON public.guides FOR ALL TO authenticated USING (public.is_admin (auth.uid ()))
+WITH
+    CHECK (public.is_admin (auth.uid ()));
 
 -- faqs
 CREATE POLICY "Public can read FAQs" ON public.faqs FOR
 SELECT USING (true);
 
-CREATE POLICY "Admins can manage FAQs" ON public.faqs FOR ALL TO authenticated USING (
-    EXISTS (
-        SELECT 1
-        FROM public.admins
-        WHERE
-            user_id = (
-                SELECT auth.uid ()
-            )
-    )
-)
+CREATE POLICY "Admins can manage FAQs" ON public.faqs FOR ALL TO authenticated USING (public.is_admin (auth.uid ()))
 WITH
-    CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.admins
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-        )
-    );
+    CHECK (public.is_admin (auth.uid ()));
 
 -- likes
 CREATE POLICY "Public can read vote counts" ON public.likes FOR
@@ -723,54 +612,18 @@ CREATE POLICY "Service can insert votes" ON public.likes FOR INSERT TO service_r
 WITH
     CHECK (true);
 
-CREATE POLICY "Admins can manage votes" ON public.likes FOR ALL TO authenticated USING (
-    EXISTS (
-        SELECT 1
-        FROM public.admins
-        WHERE
-            user_id = (
-                SELECT auth.uid ()
-            )
-    )
-)
+CREATE POLICY "Admins can manage votes" ON public.likes FOR ALL TO authenticated USING (public.is_admin (auth.uid ()))
 WITH
-    CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.admins
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-        )
-    );
+    CHECK (public.is_admin (auth.uid ()));
 
 -- submissions
 CREATE POLICY "Service can insert submissions" ON public.submissions FOR INSERT TO service_role
 WITH
     CHECK (true);
 
-CREATE POLICY "Admins can manage submissions" ON public.submissions FOR ALL TO authenticated USING (
-    EXISTS (
-        SELECT 1
-        FROM public.admins
-        WHERE
-            user_id = (
-                SELECT auth.uid ()
-            )
-    )
-)
+CREATE POLICY "Admins can manage submissions" ON public.submissions FOR ALL TO authenticated USING (public.is_admin (auth.uid ()))
 WITH
-    CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.admins
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-        )
-    );
+    CHECK (public.is_admin (auth.uid ()));
 
 -- notices
 CREATE POLICY "Public can read active notices" ON public.notices FOR
@@ -786,106 +639,36 @@ SELECT USING (
         )
     );
 
-CREATE POLICY "Admins can manage notices" ON public.notices FOR ALL TO authenticated USING (
-    EXISTS (
-        SELECT 1
-        FROM public.admins
-        WHERE
-            user_id = (
-                SELECT auth.uid ()
-            )
-    )
-)
+CREATE POLICY "Admins can manage notices" ON public.notices FOR ALL TO authenticated USING (public.is_admin (auth.uid ()))
 WITH
-    CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.admins
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-        )
-    );
+    CHECK (public.is_admin (auth.uid ()));
 
 -- themes
-CREATE POLICY "Public can read active themes" ON public.themes FOR
-SELECT USING (is_active = true);
+CREATE POLICY "Public can read all themes" ON public.themes FOR
+SELECT USING (true);
 
-CREATE POLICY "Admins can manage themes" ON public.themes FOR ALL TO authenticated USING (
-    EXISTS (
-        SELECT 1
-        FROM public.admins
-        WHERE
-            user_id = (
-                SELECT auth.uid ()
-            )
-    )
-)
+CREATE POLICY "Admins can manage themes" ON public.themes FOR ALL TO authenticated USING (public.is_admin (auth.uid ()))
 WITH
-    CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.admins
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-        )
-    );
+    CHECK (public.is_admin (auth.uid ()));
 
 -- settings
 CREATE POLICY "Public can read non-sensitive settings" ON public.settings FOR
 SELECT USING (is_sensitive = false);
 
 CREATE POLICY "Admins can read all settings" ON public.settings FOR
-SELECT TO authenticated USING (
-        EXISTS (
-            SELECT 1
-            FROM public.admins
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-        )
-    );
+SELECT TO authenticated USING (public.is_admin (auth.uid ()));
 
 CREATE POLICY "Super admins can manage settings" ON public.settings FOR ALL TO authenticated USING (
-    EXISTS (
-        SELECT 1
-        FROM public.user_roles
-        WHERE
-            user_id = (
-                SELECT auth.uid ()
-            )
-            AND role = 'super_admin'
-    )
+    public.has_role (auth.uid (), 'super_admin')
 )
 WITH
     CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.user_roles
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-                AND role = 'super_admin'
-        )
+        public.has_role (auth.uid (), 'super_admin')
     );
 
 -- admin_logs
 CREATE POLICY "Admins can view all logs" ON public.admin_logs FOR
-SELECT USING (
-        EXISTS (
-            SELECT 1
-            FROM public.admins
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-        )
-    );
+SELECT USING (public.is_admin (auth.uid ()));
 
 CREATE POLICY "System can insert logs" ON public.admin_logs FOR INSERT TO service_role
 WITH
@@ -906,16 +689,8 @@ SELECT USING (
     );
 
 CREATE POLICY "Superadmin can view all sessions" ON public.admin_sessions FOR
-SELECT USING (
-        EXISTS (
-            SELECT 1
-            FROM public.user_roles
-            WHERE
-                user_id = (
-                    SELECT auth.uid ()
-                )
-                AND role = 'super_admin'
-        )
+SELECT TO authenticated USING (
+        public.has_role (auth.uid (), 'super_admin')
     );
 
 CREATE POLICY "System can insert sessions" ON public.admin_sessions FOR INSERT TO service_role

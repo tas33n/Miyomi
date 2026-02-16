@@ -32,7 +32,7 @@ export function AdminDashboardPage() {
       const [apps, extensions, guides, submissions, notices, likes] = await Promise.all([
         supabase.from('apps').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
         supabase.from('extensions').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
-        supabase.from('guides').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+        supabase.from('guides').select('id', { count: 'exact', head: true }).in('status', ['approved', 'published']),
         supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('notices').select('id', { count: 'exact', head: true }).eq('active', true),
         supabase.from('likes').select('id', { count: 'exact', head: true }),
