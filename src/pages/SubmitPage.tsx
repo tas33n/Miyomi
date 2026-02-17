@@ -277,7 +277,7 @@ export function SubmitPage() {
   const renderSelection = () => (
     <div className="max-w-4xl mx-auto py-12 px-4 animate-in fade-in zoom-in-95 duration-500">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-4">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)] bg-clip-text text-transparent mb-4">
           What would you like to contribute?
         </h1>
         <p className="text-[var(--text-secondary)] text-lg">
@@ -598,7 +598,7 @@ export function SubmitPage() {
               <Turnstile
                 sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
                 onVerify={(token) => setTurnstileToken(token)}
-                theme="dark"
+                theme="auto"
               />
             </div>
 
@@ -640,7 +640,6 @@ export function SubmitPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-root)]">
-      <Navbar />
       <div className="pt-24 pb-12">
         {step === 0 && renderSelection()}
         {step === 1 && renderGuidelines()}

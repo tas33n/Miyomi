@@ -30,6 +30,10 @@ export function Label({ children, className = '' }: { children: React.ReactNode;
 
 interface AdminInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string;
+  value?: string | number | readonly string[];
+  placeholder?: string;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  type?: string;
 }
 
 export function AdminInput({ className = '', ...props }: AdminInputProps) {
@@ -49,6 +53,9 @@ export function AdminInput({ className = '', ...props }: AdminInputProps) {
 
 interface AdminTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   className?: string;
+  value?: string | number | readonly string[];
+  placeholder?: string;
+  onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
 }
 
 export function AdminTextarea({ className = '', ...props }: AdminTextareaProps) {
@@ -93,6 +100,8 @@ interface AdminButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   children?: React.ReactNode;
   className?: string;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+  type?: "button" | "submit" | "reset";
 }
 
 export function AdminButton({ variant = 'primary', className = '', children, ...props }: AdminButtonProps) {
