@@ -46,8 +46,12 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []); // No dependencies - subscription is set up once and never re-created
 
-  const signInWithEmail = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const signInWithEmail = useCallback(async (email: string, password: string, captchaToken?: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: captchaToken ? { captchaToken } : undefined,
+    });
     if (error) throw error;
     // Track explicit email login
     await trackSessionRef.current('login').catch(console.error);

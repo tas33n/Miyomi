@@ -216,7 +216,11 @@ export function AdminLoginPage() {
     setSubmitting(true);
     try {
       if (needsSetup) {
-        const { error: signUpError } = await supabase.auth.signUp({ email, password });
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: turnstileToken ? { captchaToken: turnstileToken } : undefined,
+        });
         if (signUpError) throw signUpError;
         const { data: claimed, error: claimError } = await supabase.rpc('claim_super_admin');
         if (claimError || !claimed) throw new Error('Failed to claim super admin.');
@@ -224,7 +228,7 @@ export function AdminLoginPage() {
         toast.success(`Super Admin Created! Welcome to the crew, ${theme.name}!`);
         window.location.reload();
       } else {
-        await signInWithEmail(email, password);
+        await signInWithEmail(email, password, turnstileToken);
       }
     } catch (err: any) {
       console.error(err);
