@@ -218,10 +218,7 @@ export function SubmitPage() {
 
     setSubmitting(true);
     try {
-      const payload = {
-        type,
-        turnstileToken,
-
+      const submittedData = {
         name: form.name,
         description: form.description,
         author: form.author,
@@ -232,10 +229,6 @@ export function SubmitPage() {
         discord_url: form.discord_url,
         platforms: form.platforms,
         tags: form.tags,
-        submitter_name: form.submitter_name,
-        submitter_contact: form.submitter_contact,
-
-
         ...(type === 'app' ? {
           version: form.version,
           download_url: form.download_url,
@@ -247,11 +240,22 @@ export function SubmitPage() {
         })
       };
 
+      const payload = {
+        submissionType: type,
+        submittedData,
+        turnstileToken,
+        submitterName: form.submitter_name,
+        submitterContact: form.submitter_contact,
+      };
+
       const { data, error } = await supabase.functions.invoke('submit-content', {
         body: payload
       });
 
-      if (error) throw error;
+      if (error) {
+        const serverMsg = data?.error || error.message;
+        throw new Error(serverMsg);
+      }
       if (!data.success) throw new Error(data.error || "Submission failed");
 
       setStep(3);
