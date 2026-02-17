@@ -72,6 +72,7 @@ Deno.serve(async (req) => {
     });
 
     const outcome = await result.json();
+    console.log("Cloudflare Turnstile Response:", JSON.stringify(outcome)); // DEBUG LOG
     if (!outcome.success) {
       console.error("Turnstile verification failed:", outcome);
       return new Response(
