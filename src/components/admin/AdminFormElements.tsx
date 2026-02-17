@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface FormFieldProps {
   label: string;
   children: React.ReactNode;
@@ -26,7 +28,9 @@ export function Label({ children, className = '' }: { children: React.ReactNode;
   );
 }
 
-interface AdminInputProps extends React.InputHTMLAttributes<HTMLInputElement> { }
+interface AdminInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  className?: string;
+}
 
 export function AdminInput({ className = '', ...props }: AdminInputProps) {
   return (
@@ -43,7 +47,9 @@ export function AdminInput({ className = '', ...props }: AdminInputProps) {
   );
 }
 
-interface AdminTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> { }
+interface AdminTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  className?: string;
+}
 
 export function AdminTextarea({ className = '', ...props }: AdminTextareaProps) {
   return (
@@ -60,7 +66,10 @@ export function AdminTextarea({ className = '', ...props }: AdminTextareaProps) 
   );
 }
 
-interface AdminSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> { }
+interface AdminSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  className?: string;
+  children?: React.ReactNode;
+}
 
 export function AdminSelect({ className = '', children, ...props }: AdminSelectProps) {
   return (
@@ -81,6 +90,9 @@ export function AdminSelect({ className = '', children, ...props }: AdminSelectP
 
 interface AdminButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'destructive';
+  children?: React.ReactNode;
+  className?: string;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export function AdminButton({ variant = 'primary', className = '', children, ...props }: AdminButtonProps) {
