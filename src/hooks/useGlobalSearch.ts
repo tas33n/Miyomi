@@ -76,7 +76,7 @@ export function useGlobalSearch(query: string): SearchResult[] {
         newResults.push({
           ...ext,
           type: 'extension',
-          description: ext.info
+          description: ext.info || ext.shortDescription || ''
         });
       }
     });

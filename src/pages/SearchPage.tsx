@@ -137,6 +137,7 @@ export function SearchPage({ onNavigate }: SearchPageProps) {
                   tags={result.contentTypes || []}
                   platforms={result.platforms || []}
                   iconColor={result.accentColor || result.iconColor}
+                  logoUrl={result.logoUrl}
                   rating={result.rating}
                   downloads={result.downloadCount}
                   forkOf={result.forkOf}
