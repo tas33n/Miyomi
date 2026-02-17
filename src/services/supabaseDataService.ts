@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { AppData, ExtensionData, FAQData, GuideCategoryData, GuideTopicData } from '../types/data';
+import type { AppData, ExtensionData, FAQData, GuideCategoryData, GuideTopicData, GuideData } from '../types/data';
 import type { Tables } from '@/integrations/supabase/types';
 
 
@@ -61,6 +61,26 @@ function toExtensionData(row: Tables<'extensions'>): ExtensionData {
     rating: meta.rating || undefined,
     downloadCount: r.download_count || meta.downloadCount || undefined,
     likes: r.likes_count || undefined,
+  };
+}
+
+
+
+function toGuideData(row: Tables<'guides'>): GuideData {
+  const meta = (row.metadata || {}) as Record<string, any>;
+  return {
+    id: row.id,
+    title: row.title,
+    slug: row.slug || row.id,
+    content: row.content || '',
+    category: row.category || 'Uncategorized',
+    description: row.description || '',
+    author: row.author || '',
+    readTime: meta.readTime || '5 min read',
+    tags: (row.tags as string[]) || [],
+    relatedAppIds: (row.related_apps as string[]) || [],
+    relatedExtensionIds: (row.related_extensions as string[]) || [],
+    updatedAt: row.updated_at,
   };
 }
 
@@ -146,5 +166,19 @@ export const supabaseDataService = {
       icon: 'book' as const,
       guides,
     }));
+  },
+
+  async getGuideBySlug(slug: string): Promise<GuideData | null> {
+    const { data, error } = await supabase
+      .from('guides')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+
+    if (error) {
+      console.error('Failed to fetch guide by slug:', error);
+      return null;
+    }
+    return toGuideData(data);
   },
 };

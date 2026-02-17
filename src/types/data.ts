@@ -49,6 +49,7 @@ export interface ExtensionTutorial {
     type: 'video' | 'guide';
     url: string;
     description?: string;
+    manualUrl?: string;
 }
 
 export interface ExtensionData {
@@ -96,6 +97,7 @@ export interface FAQData {
     keywords?: readonly string[];
     category: FAQCategory;
     relatedAppIds?: readonly string[];
+    order_index?: number;
 }
 
 
@@ -116,6 +118,22 @@ export interface GuideCategoryData {
     color: string;
     icon: GuideIcon;
     guides: readonly GuideTopicData[];
+}
+
+export interface GuideData {
+    id: string;
+    title: string;
+    slug: string;
+    content: string;
+    category: string;
+    description: string;
+    author: string;
+    readTime: string;
+    tags: string[];
+    relatedAppIds: readonly string[];
+    relatedExtensionIds: readonly string[];
+    updatedAt: string;
+    summary?: string;
 }
 
 

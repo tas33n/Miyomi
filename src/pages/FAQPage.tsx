@@ -6,6 +6,7 @@ import { FeedbackPanel } from '../components/FeedbackPanel';
 import { FeedbackTrigger } from '../components/FeedbackTrigger';
 import { useFeedbackState } from '../hooks/useFeedbackState';
 import { AnimatePresence } from 'motion/react';
+import { MarkdownRenderer } from '../components/MarkdownRenderer';
 
 export function FAQPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
@@ -15,6 +16,10 @@ export function FAQPage() {
   useEffect(() => {
     dataService.getFAQs().then(setFaqs).catch(console.error);
   }, []);
+
+  const toggleFAQ = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -48,7 +53,7 @@ export function FAQPage() {
             style={{ boxShadow: '0 6px 20px 0 rgba(0,0,0,0.08)' }}
           >
             <button
-              onClick={() => setOpenIndex(openIndex === index ? null : index)}
+              onClick={() => toggleFAQ(index)}
               className="w-full p-4 sm:p-6 flex items-center justify-between text-left hover:bg-[var(--bg-elev-1)] transition-colors"
             >
               <h3
@@ -62,13 +67,15 @@ export function FAQPage() {
                   }`}
               />
             </button>
-            {openIndex === index && (
-              <div className="px-4 sm:px-6 pb-4 sm:pb-6">
-                <p className="text-[var(--text-secondary)] font-['Inter',sans-serif]" style={{ fontSize: '14px' }}>
-                  {faq.answer}
-                </p>
-              </div>
-            )}
+            <AnimatePresence>
+              {openIndex === index && (
+                <div className="px-4 sm:px-6 pb-4 sm:pb-6 bg-[var(--bg-surface)]">
+                  <div className="text-[var(--text-secondary)] font-['Inter',sans-serif] text-sm leading-relaxed">
+                    <MarkdownRenderer content={faq.answer} />
+                  </div>
+                </div>
+              )}
+            </AnimatePresence>
           </div>
         ))}
       </div>

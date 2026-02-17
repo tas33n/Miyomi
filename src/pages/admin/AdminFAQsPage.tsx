@@ -8,6 +8,7 @@ import { AdminSearchBar } from '@/components/admin/AdminSearchBar';
 import { AdminModal } from '@/components/admin/AdminModal';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { AdminFormField, AdminInput, AdminTextarea, AdminButton, EmptyState } from '@/components/admin/AdminFormElements';
+import { AdminMarkdownEditor } from '@/components/admin/AdminMarkdownEditor';
 
 const emptyFaq = { question: '', answer: '', category: '', order_index: 0 };
 
@@ -115,9 +116,17 @@ export function AdminFAQsPage() {
           <AdminFormField label="Question" required>
             <AdminInput value={form.question} onChange={e => setForm(f => ({ ...f, question: e.target.value }))} placeholder="What is…?" />
           </AdminFormField>
-          <AdminFormField label="Answer" required>
-            <AdminTextarea value={form.answer} onChange={e => setForm(f => ({ ...f, answer: e.target.value }))} placeholder="The answer…" style={{ minHeight: '120px' }} />
-          </AdminFormField>
+          <div className="mb-4">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
+              Answer (Markdown)
+            </label>
+            <AdminMarkdownEditor
+              value={form.answer}
+              onChange={e => setForm(f => ({ ...f, answer: e.target.value }))}
+              placeholder="The answer…"
+              style={{ minHeight: '200px' }}
+            />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <AdminFormField label="Category">
               <AdminInput value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} placeholder="General" />

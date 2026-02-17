@@ -8,6 +8,7 @@ import { AdminSearchBar } from '@/components/admin/AdminSearchBar';
 import { AdminModal } from '@/components/admin/AdminModal';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { AdminFormField, AdminInput, AdminTextarea, AdminSelect, AdminButton, StatusBadge, EmptyState } from '@/components/admin/AdminFormElements';
+import { AdminMarkdownEditor } from '@/components/admin/AdminMarkdownEditor';
 
 const emptyGuide = { title: '', description: '', content: '', author: '', category: '', slug: '', status: 'approved', tags: [] as string[] };
 
@@ -143,9 +144,17 @@ export function AdminGuidesPage() {
           <AdminFormField label="Description">
             <AdminTextarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Brief summary" />
           </AdminFormField>
-          <AdminFormField label="Content (Markdown)">
-            <AdminTextarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder="# Guide content in markdown…" style={{ minHeight: '200px' }} />
-          </AdminFormField>
+          <div className="mb-4">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
+              Content (Markdown)
+            </label>
+            <AdminMarkdownEditor
+              value={form.content}
+              onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
+              placeholder="# Guide content in markdown…"
+              style={{ minHeight: '300px' }}
+            />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <AdminFormField label="Author">
               <AdminInput value={form.author} onChange={e => setForm(f => ({ ...f, author: e.target.value }))} />
