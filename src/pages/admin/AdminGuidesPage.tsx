@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminLogger } from '@/hooks/useAdminLogger';
 import { useAdminCache } from '@/hooks/useAdminCache';
@@ -16,29 +17,21 @@ export function AdminGuidesPage() {
   const { logAction } = useAdminLogger();
   const { data: guides, loading, invalidateCache } = useAdminCache<Tables<'guides'>>({ table: 'guides', orderBy: 'title' });
   const [search, setSearch] = useState('');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyGuide);
-  const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
-
-
+  // Removed internal state for modal/form
 
   const filtered = useMemo(() =>
     guides.filter(g => g.title.toLowerCase().includes(search.toLowerCase())),
     [guides, search]
   );
 
-  function openCreate() { setForm(emptyGuide); setEditingId(null); setModalOpen(true); }
+  function openCreate() {
+    navigate('/admin/guides/new');
+  }
 
   function openEdit(g: Tables<'guides'>) {
-    setForm({
-      title: g.title, description: g.description || '', content: g.content || '',
-      author: g.author || '', category: g.category || '', slug: g.slug || '',
-      status: g.status, tags: g.tags || [],
-    });
-    setEditingId(g.id);
-    setModalOpen(true);
+    navigate(`/admin/guides/${g.id}/edit`);
   }
 
   async function handleSave() {
@@ -133,51 +126,6 @@ export function AdminGuidesPage() {
         </div>
       )}
 
-      <AdminModal open={modalOpen} onClose={() => setModalOpen(false)} title={editingId ? 'Edit Guide' : 'Add Guide'} maxWidth="600px">
-        <div className="space-y-4">
-          <AdminFormField label="Title" required>
-            <AdminInput value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Guide title" />
-          </AdminFormField>
-          <AdminFormField label="Slug">
-            <AdminInput value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} placeholder="Auto-generated from title" />
-          </AdminFormField>
-          <AdminFormField label="Description">
-            <AdminTextarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Brief summary" />
-          </AdminFormField>
-          <div className="mb-4">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
-              Content (Markdown)
-            </label>
-            <AdminMarkdownEditor
-              value={form.content}
-              onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-              placeholder="# Guide content in markdown…"
-              style={{ minHeight: '300px' }}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <AdminFormField label="Author">
-              <AdminInput value={form.author} onChange={e => setForm(f => ({ ...f, author: e.target.value }))} />
-            </AdminFormField>
-            <AdminFormField label="Category">
-              <AdminInput value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} />
-            </AdminFormField>
-          </div>
-          <AdminFormField label="Status">
-            <AdminSelect value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
-              <option value="approved">Approved</option>
-              <option value="draft">Draft</option>
-            </AdminSelect>
-          </AdminFormField>
-          <AdminFormField label="Tags (comma-separated)">
-            <AdminInput value={form.tags.join(', ')} onChange={e => setForm(f => ({ ...f, tags: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))} />
-          </AdminFormField>
-          <div className="flex justify-end gap-2 pt-2">
-            <AdminButton variant="secondary" onClick={() => setModalOpen(false)}>Cancel</AdminButton>
-            <AdminButton onClick={handleSave} disabled={!form.title || saving}>{saving ? 'Saving…' : editingId ? 'Update' : 'Create'}</AdminButton>
-          </div>
-        </div>
-      </AdminModal>
 
       <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete}
         title="Delete Guide" message={`Are you sure you want to delete "${deleteTarget?.name}"?`} />

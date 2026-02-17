@@ -24,6 +24,7 @@ import { AdminAppFormPage } from './pages/admin/AdminAppFormPage';
 import { AdminExtensionsPage } from './pages/admin/AdminExtensionsPage';
 import { AdminExtensionFormPage } from './pages/admin/AdminExtensionFormPage';
 import { AdminGuidesPage } from './pages/admin/AdminGuidesPage';
+import { AdminGuideEditorPage } from './pages/admin/AdminGuideEditorPage';
 import { AdminFAQsPage } from './pages/admin/AdminFAQsPage';
 import { AdminSubmissionsPage } from './pages/admin/AdminSubmissionsPage';
 import { AdminLikesPage } from './pages/admin/AdminLikesPage';
@@ -108,28 +109,33 @@ function AppContent() {
   // Admin routes get their own layout (no Navbar/Footer)
   if (isAdminRoute) {
     return (
-      <Routes>
-        <Route path="/admin" element={<AdminLoginPage />} />
-        <Route path="/admin/*" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-          <Route path="dashboard" element={<AdminDashboardPage />} />
-          <Route path="apps" element={<AdminAppsPage />} />
-          <Route path="apps/new" element={<AdminAppFormPage />} />
-          <Route path="apps/:id/edit" element={<AdminAppFormPage />} />
-          <Route path="extensions" element={<AdminExtensionsPage />} />
-          <Route path="extensions/new" element={<AdminExtensionFormPage />} />
-          <Route path="extensions/:id/edit" element={<AdminExtensionFormPage />} />
-          <Route path="guides" element={<AdminGuidesPage />} />
-          <Route path="faqs" element={<AdminFAQsPage />} />
-          <Route path="submissions" element={<AdminSubmissionsPage />} />
-          <Route path="likes" element={<AdminLikesPage />} />
-          <Route path="notices" element={<AdminNoticesPage />} />
-          <Route path="themes" element={<AdminThemesPage />} />
-          <Route path="settings" element={<AdminSettingsPage />} />
-          <Route path="logs" element={<AdminLogsPage />} />
-          <Route path="sessions" element={<AdminSessionsPage />} />
-          <Route path="admins" element={<ProtectedRoute requireSuperAdmin><AdminUsersPage /></ProtectedRoute>} />
-        </Route>
-      </Routes>
+      <>
+        <Toaster position="top-center" />
+        <Routes>
+          <Route path="/admin" element={<AdminLoginPage />} />
+          <Route path="/admin/*" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+            <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="apps" element={<AdminAppsPage />} />
+            <Route path="apps/new" element={<AdminAppFormPage />} />
+            <Route path="apps/:id/edit" element={<AdminAppFormPage />} />
+            <Route path="extensions" element={<AdminExtensionsPage />} />
+            <Route path="extensions/new" element={<AdminExtensionFormPage />} />
+            <Route path="extensions/:id/edit" element={<AdminExtensionFormPage />} />
+            <Route path="guides" element={<AdminGuidesPage />} />
+            <Route path="guides/new" element={<AdminGuideEditorPage />} />
+            <Route path="guides/:id/edit" element={<AdminGuideEditorPage />} />
+            <Route path="faqs" element={<AdminFAQsPage />} />
+            <Route path="submissions" element={<AdminSubmissionsPage />} />
+            <Route path="likes" element={<AdminLikesPage />} />
+            <Route path="notices" element={<AdminNoticesPage />} />
+            <Route path="themes" element={<AdminThemesPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
+            <Route path="logs" element={<AdminLogsPage />} />
+            <Route path="sessions" element={<AdminSessionsPage />} />
+            <Route path="admins" element={<ProtectedRoute requireSuperAdmin><AdminUsersPage /></ProtectedRoute>} />
+          </Route>
+        </Routes>
+      </>
     );
   }
 

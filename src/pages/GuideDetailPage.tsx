@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { dataService } from '../services/dataService';
 import type { GuideData } from '../types/data';
-import { MarkdownRenderer } from '../components/MarkdownRenderer';
+import DOMPurify from 'dompurify';
 
 interface GuideDetailPageProps {
   slug?: string;
@@ -116,7 +116,15 @@ export function GuideDetailPage({ slug: propSlug, onNavigate }: GuideDetailPageP
         className="rounded-2xl border border-[var(--divider)] bg-[var(--bg-surface)] p-6 sm:p-8"
         style={{ boxShadow: '0 6px 20px 0 rgba(0,0,0,0.08)' }}
       >
-        <MarkdownRenderer content={guide.content} />
+        <div
+          className="prose prose-invert max-w-none prose-headings:font-['Poppins',sans-serif] prose-p:font-['Inter',sans-serif] prose-a:text-[var(--brand)] prose-img:rounded-xl prose-img:shadow-lg prose-headings:text-[var(--text-primary)] prose-p:text-[var(--text-secondary)] prose-strong:text-[var(--text-primary)]"
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(guide.content, {
+              ADD_TAGS: ['iframe', 'style'],
+              ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'style', 'class', 'target']
+            })
+          }}
+        />
       </div>
 
       {/* Related Guides */}

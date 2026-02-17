@@ -56,6 +56,7 @@ interface AdminTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaEl
   value?: string | number | readonly string[];
   placeholder?: string;
   onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
+  rows?: number;
 }
 
 export function AdminTextarea({ className = '', ...props }: AdminTextareaProps) {
@@ -76,6 +77,8 @@ export function AdminTextarea({ className = '', ...props }: AdminTextareaProps) 
 interface AdminSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   className?: string;
   children?: React.ReactNode;
+  value?: string | number | readonly string[];
+  onChange?: React.ChangeEventHandler<HTMLSelectElement>;
 }
 
 export function AdminSelect({ className = '', children, ...props }: AdminSelectProps) {
@@ -133,7 +136,7 @@ export function AdminButton({ variant = 'primary', className = '', children, ...
 }
 
 export function StatusBadge({ status, active }: { status?: string; active?: boolean }) {
-  const isActive = active ?? (status === 'approved' || status === 'active');
+  const isActive = active ?? (status === 'published' || status === 'active' || status === 'approved');
   return (
     <span
       className="px-2.5 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1"
