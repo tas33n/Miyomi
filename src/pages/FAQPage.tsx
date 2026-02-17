@@ -28,7 +28,7 @@ export function FAQPage() {
           className="text-[var(--text-primary)] font-['Poppins',sans-serif]"
           style={{ fontSize: 'clamp(32px, 5vw, 40px)', lineHeight: '1.2', fontWeight: 600 }}
         >
-          Frequently Asked Questions
+          FAQs
         </h1>
         <FeedbackTrigger isOpen={isFeedbackOpen} onToggle={handleToggle} title="FAQ" />
       </div>

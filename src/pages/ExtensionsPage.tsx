@@ -240,7 +240,7 @@ export function ExtensionsPage({ onNavigate }: ExtensionsPageProps) {
             className="text-[var(--text-primary)] font-['Poppins',sans-serif]"
             style={{ fontSize: 'clamp(28px, 5vw, 40px)', lineHeight: '1.2', fontWeight: 700 }}
           >
-            Extension Sources
+            Extensions
           </h1>
           <FeedbackTrigger isOpen={isFeedbackOpen} onToggle={handleToggle} title="Extensions" />
         </div>
