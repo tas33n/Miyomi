@@ -256,7 +256,10 @@ export function SubmitPage() {
         const serverMsg = data?.error || error.message;
         throw new Error(serverMsg);
       }
-      if (!data.success) throw new Error(data.error || "Submission failed");
+      if (!data.success) {
+        const detailMsg = data.details ? ` (${JSON.stringify(data.details)})` : '';
+        throw new Error((data.error || "Submission failed") + detailMsg);
+      }
 
       setStep(3);
       toast.success("Submission received!");
