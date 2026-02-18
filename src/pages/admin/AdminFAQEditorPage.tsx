@@ -12,7 +12,7 @@ const emptyFaq = {
     answer: '',
     category: '',
     order_index: 0,
-    content_format: 'html' as 'html' | 'markdown',
+    content_format: 'markdown' as 'html' | 'markdown',
 };
 
 export function AdminFAQEditorPage() {
