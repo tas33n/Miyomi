@@ -7,6 +7,7 @@ import type { GuideCategoryData } from '../types/data';
 import { FeedbackPanel } from '../components/FeedbackPanel';
 import { FeedbackTrigger } from '../components/FeedbackTrigger';
 import { useFeedbackState } from '../hooks/useFeedbackState';
+import { DevBanner } from '@/components/DevBanner';
 
 interface GuidesPageProps {
   onNavigate?: (path: string) => void;
@@ -173,6 +174,13 @@ export function GuidesPage({ onNavigate }: GuidesPageProps) {
   return (
     <div className="max-w-6xl mx-auto" ref={scrollContainerRef}>
       {/* Hero Section */}
+
+
+      <div className="mb-6">
+        <DevBanner section="Guides" />
+      </div>
+
+
       <div className="mb-8 relative">
         {/* Decorative background glow - positioned safely */}
         <div className="absolute -top-4 left-0 w-32 h-32 bg-gradient-to-br from-[#FFB3C1]/20 to-[#FF6B9D]/10 rounded-full blur-3xl opacity-60 pointer-events-none -z-10"></div>

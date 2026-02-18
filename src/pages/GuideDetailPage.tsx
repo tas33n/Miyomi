@@ -6,6 +6,7 @@ import { dataService } from '../services/dataService';
 import type { GuideData } from '../types/data';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
+import { DevBanner } from '../components/DevBanner';
 
 marked.setOptions({ breaks: true, gfm: true });
 
