@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminFormField, AdminInput, AdminTextarea, AdminSelect, AdminButton, Label } from '@/components/admin/AdminFormElements';
 import { AdminSmartSelect } from '@/components/admin/AdminSmartSelect';
@@ -22,9 +22,32 @@ const EXT_TAGS = ['NSFW', 'SFW', 'Official', 'Fan Source'];
 
 export function SubmitPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [step, setStep] = useState(0);
-  const [type, setType] = useState<'app' | 'extension' | null>(null);
+  // Derive step & type from URL search params
+  const STEP_MAP: Record<string, number> = { select: 0, guidelines: 1, form: 2, success: 3 };
+  const STEP_NAMES = ['select', 'guidelines', 'form', 'success'];
+
+  const urlType = searchParams.get('type') as 'app' | 'extension' | null;
+  const urlStep = searchParams.get('step') || 'select';
+  const step = STEP_MAP[urlStep] ?? 0;
+  const type = (urlType === 'app' || urlType === 'extension') ? urlType : null;
+
+  // If we're on a step that requires a type but don't have one, reset
+  useEffect(() => {
+    if (step > 0 && !type) {
+      setSearchParams({}, { replace: true });
+    }
+  }, [step, type]);
+
+  function goTo(newStep: number, newType?: 'app' | 'extension' | null) {
+    const t = newType !== undefined ? newType : type;
+    const params: Record<string, string> = {};
+    if (t) params.type = t;
+    if (newStep > 0) params.step = STEP_NAMES[newStep];
+    setSearchParams(params, { replace: false });
+  }
+
   const [submitting, setSubmitting] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState('');
 
@@ -283,7 +306,7 @@ export function SubmitPage() {
         throw new Error((data.error || "Submission failed") + detailMsg);
       }
 
-      setStep(3);
+      goTo(3);
       toast.success("Submission received!");
     } catch (err: any) {
       console.error(err);
@@ -310,7 +333,7 @@ export function SubmitPage() {
       <div className="grid md:grid-cols-2 gap-6">
         {/* App Card */}
         <button
-          onClick={() => { setType('app'); setStep(1); }}
+          onClick={() => goTo(1, 'app')}
           className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--bg-elev-1)] to-[var(--bg-elev-2)] border border-[var(--divider)] p-8 text-left transition-all hover:border-[var(--brand)] hover:shadow-[0_0_40px_-10px_rgba(var(--brand-rgb),0.3)]"
         >
           <div className="relative z-10">
@@ -329,7 +352,7 @@ export function SubmitPage() {
 
         {/* Extension Card */}
         <button
-          onClick={() => { setType('extension'); setStep(1); }}
+          onClick={() => goTo(1, 'extension')}
           className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--bg-elev-1)] to-[var(--bg-elev-2)] border border-[var(--divider)] p-8 text-left transition-all hover:border-[var(--brand-secondary)] hover:shadow-[0_0_40px_-10px_rgba(168,85,247,0.3)]"
         >
           <div className="relative z-10">
@@ -379,8 +402,8 @@ export function SubmitPage() {
       </div>
 
       <div className="flex gap-4 justify-center">
-        <AdminButton variant="secondary" onClick={() => setStep(0)}>Back</AdminButton>
-        <AdminButton onClick={() => setStep(2)}>I Understand, Proceed</AdminButton>
+        <AdminButton variant="secondary" onClick={() => goTo(0)}>Back</AdminButton>
+        <AdminButton onClick={() => goTo(2)}>I Understand, Proceed</AdminButton>
       </div>
     </div>
   );
@@ -389,7 +412,7 @@ export function SubmitPage() {
   const renderForm = () => (
     <div className="max-w-5xl mx-auto py-8 px-4 animate-in slide-in-from-bottom-8 duration-500">
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={() => setStep(0)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+        <button onClick={() => goTo(0)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
           <ArrowLeft className="w-6 h-6" />
         </button>
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">
@@ -716,7 +739,7 @@ export function SubmitPage() {
         Thank you for contributing to the library. Your submission has been queued for review by our moderators.
       </p>
       <div className="flex justify-center gap-4">
-        <AdminButton variant="secondary" onClick={() => { setStep(0); setType(null); setForm(prev => ({ ...prev, name: '' })); }}>
+        <AdminButton variant="secondary" onClick={() => { goTo(0, null); }}>
           Submit Another
         </AdminButton>
         <AdminButton onClick={() => navigate('/')}>

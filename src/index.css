@@ -170,6 +170,17 @@ html {
     @apply bg-background text-foreground;
   }
 
+  /* Ensure all interactive elements show pointer cursor */
+  button,
+  a,
+  select,
+  [role="button"],
+  input[type="checkbox"],
+  input[type="radio"],
+  summary {
+    cursor: pointer;
+  }
+
   html:not(.dark):not(.light) {
     visibility: hidden;
   }
