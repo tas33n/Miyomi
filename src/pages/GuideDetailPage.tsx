@@ -5,6 +5,9 @@ import { useParams } from 'react-router-dom';
 import { dataService } from '../services/dataService';
 import type { GuideData } from '../types/data';
 import DOMPurify from 'dompurify';
+import { marked } from 'marked';
+
+marked.setOptions({ breaks: true, gfm: true });
 
 interface GuideDetailPageProps {
   slug?: string;
@@ -117,12 +120,17 @@ export function GuideDetailPage({ slug: propSlug, onNavigate }: GuideDetailPageP
         style={{ boxShadow: '0 6px 20px 0 rgba(0,0,0,0.08)' }}
       >
         <div
-          className="prose prose-invert max-w-none prose-headings:font-['Poppins',sans-serif] prose-p:font-['Inter',sans-serif] prose-a:text-[var(--brand)] prose-img:rounded-xl prose-img:shadow-lg prose-headings:text-[var(--text-primary)] prose-p:text-[var(--text-secondary)] prose-strong:text-[var(--text-primary)]"
+          className="prose prose-invert max-w-none prose-headings:font-['Poppins',sans-serif] prose-p:font-['Inter',sans-serif] prose-a:text-[var(--brand)] prose-img:rounded-xl prose-img:shadow-lg prose-headings:text-[var(--text-primary)] prose-p:text-[var(--text-secondary)] prose-strong:text-[var(--text-primary)] prose-code:text-[var(--brand)] prose-code:bg-[var(--chip-bg)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:text-xs prose-pre:bg-[var(--bg-elev-1)] prose-pre:border prose-pre:border-[var(--divider)] prose-pre:rounded-xl prose-blockquote:border-l-[var(--brand)] prose-blockquote:bg-[var(--chip-bg)] prose-blockquote:rounded-r-lg prose-blockquote:py-1 prose-blockquote:px-4 prose-hr:border-[var(--divider)]"
           dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(guide.content, {
-              ADD_TAGS: ['iframe', 'style'],
-              ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'style', 'class', 'target']
-            })
+            __html: DOMPurify.sanitize(
+              (guide as any).content_format === 'markdown'
+                ? (marked.parse(guide.content) as string)
+                : guide.content,
+              {
+                ADD_TAGS: ['iframe', 'style', 'div', 'details', 'summary'],
+                ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'style', 'class', 'target', 'open'],
+              }
+            )
           }}
         />
       </div>

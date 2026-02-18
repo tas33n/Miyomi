@@ -6,7 +6,11 @@ import { AdminInput, AdminButton, AdminSelect, AdminTextarea, AdminFormField } f
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
-const emptyGuide = { title: '', description: '', content: '', author: '', category: '', slug: '', status: 'draft', tags: [] as string[] };
+const emptyGuide = {
+    title: '', description: '', content: '', author: '', category: '',
+    slug: '', status: 'draft', tags: [] as string[],
+    content_format: 'markdown' as 'html' | 'markdown',
+};
 
 export function AdminGuideEditorPage() {
     const { id } = useParams<{ id: string }>();
@@ -35,6 +39,7 @@ export function AdminGuideEditorPage() {
                     slug: data.slug || '',
                     status: data.status,
                     tags: data.tags || [],
+                    content_format: (data as any).content_format || 'html',
                 });
             } catch (error) {
                 console.error(error);
@@ -63,22 +68,20 @@ export function AdminGuideEditorPage() {
             slug: form.slug || form.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
             status: form.status,
             tags: form.tags.length ? form.tags : null,
+            content_format: form.content_format,
             updated_at: new Date().toISOString(),
         };
 
         try {
-            console.log('Saving Payload:', payload);
             if (id) {
                 const { data, error } = await supabase.from('guides').update(payload).eq('id', id).select();
-                console.log('Update Response:', { data, error });
                 if (error) throw error;
-                if (!data || data.length === 0) throw new Error('Update succeeded but no rows were returned. Check RLS policies.');
-                toast.success('Guide updated');
+                if (!data || data.length === 0) throw new Error('Update failed — check RLS policies.');
+                toast.success('Guide saved!');
             } else {
                 const { data, error } = await supabase.from('guides').insert(payload).select();
-                console.log('Insert Response:', { data, error });
                 if (error) throw error;
-                toast.success('Guide created');
+                toast.success('Guide created!');
                 navigate('/admin/guides');
             }
         } catch (error: any) {
@@ -92,7 +95,8 @@ export function AdminGuideEditorPage() {
     if (loading) return <div className="p-8 text-center text-[var(--text-secondary)]">Loading...</div>;
 
     return (
-        <div className="max-w-5xl mx-auto pb-20">
+        <div className="max-w-[1400px] mx-auto pb-20">
+            {/* Top bar */}
             <div className="flex items-center justify-between gap-4 mb-6">
                 <button
                     onClick={() => navigate('/admin/guides')}
@@ -108,30 +112,31 @@ export function AdminGuideEditorPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Content */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="space-y-4">
-                        <input
-                            type="text"
-                            value={form.title}
-                            onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                            placeholder="Guide Title"
-                            className="w-full bg-transparent text-3xl font-bold border-none focus:outline-none focus:ring-0 px-0 placeholder-[var(--text-secondary)]"
-                            style={{ color: 'var(--text-primary)' }}
-                        />
-                        <AdminRichTextEditor
-                            value={form.content}
-                            onChange={content => setForm(f => ({ ...f, content }))}
-                            placeholder="Start writing your guide..."
-                            className="min-h-[500px]"
-                        />
-                    </div>
+            {/* Two-column layout */}
+            <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
+                {/* Main editor column */}
+                <div className="space-y-4 min-w-0">
+                    <input
+                        type="text"
+                        value={form.title}
+                        onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                        placeholder="Guide Title"
+                        className="w-full bg-transparent text-3xl font-bold border-none focus:outline-none focus:ring-0 px-0 placeholder-[var(--text-secondary)]"
+                        style={{ color: 'var(--text-primary)' }}
+                    />
+
+                    <AdminRichTextEditor
+                        value={form.content}
+                        onChange={content => setForm(f => ({ ...f, content }))}
+                        format={form.content_format}
+                        onFormatChange={content_format => setForm(f => ({ ...f, content_format }))}
+                        placeholder="Start writing your guide..."
+                    />
                 </div>
 
-                {/* Sidebar Settings */}
+                {/* Sidebar settings */}
                 <div className="space-y-6">
-                    <div className="p-4 rounded-xl border space-y-4" style={{ background: 'var(--bg-surface)', borderColor: 'var(--divider)' }}>
+                    <div className="p-4 rounded-xl border space-y-4 sticky top-4" style={{ background: 'var(--bg-surface)', borderColor: 'var(--divider)' }}>
                         <h3 className="font-semibold text-[var(--text-primary)]">Settings</h3>
 
                         <AdminFormField label="Status">
