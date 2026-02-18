@@ -98,6 +98,7 @@ export interface FAQData {
     category: FAQCategory;
     relatedAppIds?: readonly string[];
     order_index?: number;
+    content_format?: 'html' | 'markdown';
 }
 
 

@@ -91,6 +91,7 @@ function toFAQData(row: Tables<'faqs'>): FAQData {
     question: row.question,
     answer: row.answer,
     category: (row.category as any) || 'general',
+    content_format: (row as any).content_format || 'markdown',
   };
 }
 

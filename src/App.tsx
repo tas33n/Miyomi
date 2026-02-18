@@ -26,6 +26,7 @@ import { AdminExtensionFormPage } from './pages/admin/AdminExtensionFormPage';
 import { AdminGuidesPage } from './pages/admin/AdminGuidesPage';
 import { AdminGuideEditorPage } from './pages/admin/AdminGuideEditorPage';
 import { AdminFAQsPage } from './pages/admin/AdminFAQsPage';
+import { AdminFAQEditorPage } from './pages/admin/AdminFAQEditorPage';
 import { AdminSubmissionsPage } from './pages/admin/AdminSubmissionsPage';
 import { AdminLikesPage } from './pages/admin/AdminLikesPage';
 import { AdminNoticesPage } from './pages/admin/AdminNoticesPage';
@@ -125,6 +126,8 @@ function AppContent() {
             <Route path="guides/new" element={<AdminGuideEditorPage />} />
             <Route path="guides/:id/edit" element={<AdminGuideEditorPage />} />
             <Route path="faqs" element={<AdminFAQsPage />} />
+            <Route path="faqs/new" element={<AdminFAQEditorPage />} />
+            <Route path="faqs/:id/edit" element={<AdminFAQEditorPage />} />
             <Route path="submissions" element={<AdminSubmissionsPage />} />
             <Route path="likes" element={<AdminLikesPage />} />
             <Route path="notices" element={<AdminNoticesPage />} />
