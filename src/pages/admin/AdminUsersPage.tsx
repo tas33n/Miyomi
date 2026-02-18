@@ -1,30 +1,102 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import { Plus, Trash2, Users, UserPlus, Loader2, ShieldCheck, ShieldOff, CheckCircle2 } from 'lucide-react';
+import { Trash2, Users, UserPlus, Loader2, ShieldCheck, ShieldOff, CheckCircle2, Pencil, KeyRound, Crown, Shield } from 'lucide-react';
 import { AdminModal } from '@/components/admin/AdminModal';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { AdminFormField, AdminInput, AdminSelect, AdminButton, StatusBadge, EmptyState } from '@/components/admin/AdminFormElements';
 import { toast } from 'sonner';
 
+/* ── Types ── */
+type AdminWithRole = Tables<'admins'> & { role?: string };
+
+/* ── Inline CSS for action buttons ── */
+const btnBase: React.CSSProperties = { transition: 'all 0.2s ease' };
+
+function useHoverStyle(
+  defaultStyle: React.CSSProperties,
+  hoverStyle: React.CSSProperties,
+  pressStyle?: React.CSSProperties,
+) {
+  return {
+    style: { ...btnBase, ...defaultStyle },
+    onMouseEnter: (e: React.MouseEvent<HTMLButtonElement>) => Object.assign(e.currentTarget.style, hoverStyle),
+    onMouseLeave: (e: React.MouseEvent<HTMLButtonElement>) => Object.assign(e.currentTarget.style, { ...btnBase, ...defaultStyle }),
+    onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => Object.assign(e.currentTarget.style, pressStyle ?? { transform: 'translateY(0) scale(0.95)' }),
+    onMouseUp: (e: React.MouseEvent<HTMLButtonElement>) => Object.assign(e.currentTarget.style, { transform: hoverStyle.transform ?? '' }),
+  };
+}
+
+/* ── Role Badge ── */
+function RoleBadge({ role }: { role?: string }) {
+  const isSuperAdmin = role === 'super_admin';
+  return (
+    <span
+      className="px-2.5 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1.5"
+      style={{
+        background: isSuperAdmin
+          ? 'color-mix(in srgb, #8B5CF6 15%, transparent)'
+          : 'color-mix(in srgb, #3B82F6 15%, transparent)',
+        color: isSuperAdmin ? '#8B5CF6' : '#3B82F6',
+      }}
+    >
+      {isSuperAdmin ? <Crown className="w-3 h-3" /> : <Shield className="w-3 h-3" />}
+      {isSuperAdmin ? 'Super Admin' : 'Admin'}
+    </span>
+  );
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 export function AdminUsersPage() {
-  const [admins, setAdmins] = useState<Tables<'admins'>[]>([]);
+  const [admins, setAdmins] = useState<AdminWithRole[]>([]);
   const [loading, setLoading] = useState(true);
+
+  /* Create modal */
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ email: '', password: '', display_name: '', role: 'admin' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  /* Edit modal */
+  const [editTarget, setEditTarget] = useState<AdminWithRole | null>(null);
+  const [editForm, setEditForm] = useState({ display_name: '', role: 'admin', password: '' });
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState('');
+
+  /* Delete confirm */
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
+
+  /* Toggle loading */
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
   useEffect(() => { fetchData(); }, []);
 
+  /* ── Fetch admins with roles ── */
   async function fetchData() {
-    const { data } = await supabase.from('admins').select('*').order('email');
-    setAdmins(data || []);
+    // 1. Fetch admins
+    const { data: adminRows } = await supabase.from('admins').select('*').order('email');
+    if (!adminRows) { setAdmins([]); setLoading(false); return; }
+
+    // 2. Fetch roles for all admin user_ids
+    const userIds = adminRows.filter(a => a.user_id).map(a => a.user_id!);
+    let roleMap: Record<string, string> = {};
+    if (userIds.length) {
+      const { data: roles } = await supabase.from('user_roles').select('user_id, role').in('user_id', userIds);
+      if (roles) {
+        roleMap = Object.fromEntries(roles.map(r => [r.user_id, r.role]));
+      }
+    }
+
+    // 3. Merge
+    const merged: AdminWithRole[] = adminRows.map(a => ({
+      ...a,
+      role: a.user_id ? roleMap[a.user_id] ?? 'admin' : 'admin',
+    }));
+    setAdmins(merged);
     setLoading(false);
   }
 
+  /* ── Toggle active ── */
   async function toggleActive(id: string, email: string, active: boolean) {
     setTogglingId(id);
     try {
@@ -42,6 +114,7 @@ export function AdminUsersPage() {
     }
   }
 
+  /* ── Create admin ── */
   async function handleCreate() {
     setSaving(true);
     setError('');
@@ -53,9 +126,7 @@ export function AdminUsersPage() {
       if (data?.error) throw new Error(data.error);
       setModalOpen(false);
       setForm({ email: '', password: '', display_name: '', role: 'admin' });
-      toast.success(`Admin "${form.email}" created successfully!`, {
-        icon: <CheckCircle2 className="w-4 h-4" />,
-      });
+      toast.success(`Admin "${form.email}" created successfully!`, { icon: <CheckCircle2 className="w-4 h-4" /> });
       fetchData();
     } catch (err: any) {
       const msg = err.message || 'Failed to create admin';
@@ -66,6 +137,52 @@ export function AdminUsersPage() {
     }
   }
 
+  /* ── Edit admin ── */
+  function openEdit(admin: AdminWithRole) {
+    setEditTarget(admin);
+    setEditForm({
+      display_name: admin.display_name || '',
+      role: admin.role || 'admin',
+      password: '',
+    });
+    setEditError('');
+  }
+
+  async function handleEdit() {
+    if (!editTarget?.user_id) return;
+    setEditSaving(true);
+    setEditError('');
+    try {
+      const body: Record<string, string> = {
+        action: 'update',
+        user_id: editTarget.user_id,
+        display_name: editForm.display_name,
+        role: editForm.role,
+      };
+      if (editForm.password.trim()) {
+        if (editForm.password.length < 6) {
+          setEditError('Password must be at least 6 characters');
+          setEditSaving(false);
+          return;
+        }
+        body.password = editForm.password;
+      }
+      const { data, error: fnError } = await supabase.functions.invoke('manage-admin', { body });
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(data.error);
+      setEditTarget(null);
+      toast.success(`Admin "${editTarget.email}" updated`, { icon: <Pencil className="w-4 h-4" /> });
+      fetchData();
+    } catch (err: any) {
+      const msg = err.message || 'Failed to update admin';
+      setEditError(msg);
+      toast.error(msg);
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
+  /* ── Delete admin ── */
   async function handleDelete() {
     if (!deleteTarget) return;
     const email = deleteTarget.email;
@@ -75,9 +192,7 @@ export function AdminUsersPage() {
       });
       if (fnError) throw fnError;
       if (data?.error) throw new Error(data.error);
-      toast.success(`Admin "${email}" removed`, {
-        icon: <Trash2 className="w-4 h-4" />,
-      });
+      toast.success(`Admin "${email}" removed`, { icon: <Trash2 className="w-4 h-4" /> });
     } catch (err: any) {
       toast.error(err.message || 'Failed to remove admin');
     }
@@ -85,8 +200,36 @@ export function AdminUsersPage() {
     fetchData();
   }
 
+  /* ── Hover helpers ── */
+  const toggleHover = (active: boolean) =>
+    useHoverStyle(
+      {
+        borderColor: active ? 'color-mix(in srgb, #F59E0B 40%, var(--divider))' : 'color-mix(in srgb, #10B981 40%, var(--divider))',
+        color: active ? '#F59E0B' : '#10B981',
+        background: active ? 'color-mix(in srgb, #F59E0B 6%, transparent)' : 'color-mix(in srgb, #10B981 6%, transparent)',
+      },
+      {
+        background: active ? 'color-mix(in srgb, #F59E0B 18%, transparent)' : 'color-mix(in srgb, #10B981 18%, transparent)',
+        borderColor: active ? '#F59E0B' : '#10B981',
+        transform: 'translateY(-1px)',
+        boxShadow: active ? '0 4px 12px color-mix(in srgb, #F59E0B 20%, transparent)' : '0 4px 12px color-mix(in srgb, #10B981 20%, transparent)',
+      },
+    );
+
+  const editHover = useHoverStyle(
+    { color: 'var(--text-secondary)', background: 'transparent' },
+    { color: '#3B82F6', background: 'color-mix(in srgb, #3B82F6 12%, transparent)', transform: 'translateY(-1px)', boxShadow: '0 4px 12px color-mix(in srgb, #3B82F6 15%, transparent)' },
+  );
+
+  const deleteHover = useHoverStyle(
+    { color: 'var(--text-secondary)', background: 'transparent' },
+    { color: '#EF4444', background: 'color-mix(in srgb, #EF4444 12%, transparent)', transform: 'translateY(-1px)', boxShadow: '0 4px 12px color-mix(in srgb, #EF4444 15%, transparent)' },
+  );
+
+  /* ━━━━━━━━━━━━━━━━━ RENDER ━━━━━━━━━━━━━━━━━ */
   return (
     <div>
+      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold font-['Poppins',sans-serif]" style={{ color: 'var(--text-primary)' }}>Admin Users</h1>
         <AdminButton onClick={() => { setError(''); setModalOpen(true); }}>
@@ -94,6 +237,7 @@ export function AdminUsersPage() {
         </AdminButton>
       </div>
 
+      {/* Table */}
       {loading ? (
         <div className="text-center py-12" style={{ color: 'var(--text-secondary)' }}>Loading…</div>
       ) : admins.length === 0 ? (
@@ -106,114 +250,73 @@ export function AdminUsersPage() {
                 <tr style={{ background: 'var(--bg-elev-1)' }}>
                   <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Email</th>
                   <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider hidden sm:table-cell" style={{ color: 'var(--text-secondary)' }}>Name</th>
+                  <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider hidden md:table-cell" style={{ color: 'var(--text-secondary)' }}>Role</th>
                   <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Status</th>
                   <th className="text-right px-4 py-3 font-semibold text-xs uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {admins.map(admin => (
-                  <tr key={admin.id} className="border-t transition-colors" style={{ borderColor: 'var(--divider)' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-elev-1)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = '')}
-                  >
-                    <td className="px-4 py-3 font-medium" style={{ color: 'var(--text-primary)' }}>{admin.email}</td>
-                    <td className="px-4 py-3 hidden sm:table-cell" style={{ color: 'var(--text-secondary)' }}>{admin.display_name || '—'}</td>
-                    <td className="px-4 py-3"><StatusBadge active={admin.is_active} /></td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {/* Toggle Active Button */}
-                        <button
-                          onClick={() => toggleActive(admin.id, admin.email, admin.is_active)}
-                          disabled={togglingId === admin.id}
-                          className="admin-action-btn group relative px-3 py-1.5 text-xs rounded-lg border font-semibold transition-all duration-200 overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
-                          style={{
-                            borderColor: admin.is_active ? 'color-mix(in srgb, #F59E0B 40%, var(--divider))' : 'color-mix(in srgb, #10B981 40%, var(--divider))',
-                            color: admin.is_active ? '#F59E0B' : '#10B981',
-                            background: admin.is_active
-                              ? 'color-mix(in srgb, #F59E0B 6%, transparent)'
-                              : 'color-mix(in srgb, #10B981 6%, transparent)',
-                          }}
-                          onMouseEnter={e => {
-                            const btn = e.currentTarget;
-                            btn.style.background = admin.is_active
-                              ? 'color-mix(in srgb, #F59E0B 18%, transparent)'
-                              : 'color-mix(in srgb, #10B981 18%, transparent)';
-                            btn.style.borderColor = admin.is_active ? '#F59E0B' : '#10B981';
-                            btn.style.transform = 'translateY(-1px)';
-                            btn.style.boxShadow = admin.is_active
-                              ? '0 4px 12px color-mix(in srgb, #F59E0B 20%, transparent)'
-                              : '0 4px 12px color-mix(in srgb, #10B981 20%, transparent)';
-                          }}
-                          onMouseLeave={e => {
-                            const btn = e.currentTarget;
-                            btn.style.background = admin.is_active
-                              ? 'color-mix(in srgb, #F59E0B 6%, transparent)'
-                              : 'color-mix(in srgb, #10B981 6%, transparent)';
-                            btn.style.borderColor = admin.is_active
-                              ? 'color-mix(in srgb, #F59E0B 40%, var(--divider))'
-                              : 'color-mix(in srgb, #10B981 40%, var(--divider))';
-                            btn.style.transform = '';
-                            btn.style.boxShadow = '';
-                          }}
-                          onMouseDown={e => {
-                            e.currentTarget.style.transform = 'translateY(0px) scale(0.97)';
-                          }}
-                          onMouseUp={e => {
-                            e.currentTarget.style.transform = 'translateY(-1px)';
-                          }}
-                        >
-                          {togglingId === admin.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : admin.is_active ? (
-                            <ShieldOff className="w-3.5 h-3.5" />
-                          ) : (
-                            <ShieldCheck className="w-3.5 h-3.5" />
-                          )}
-                          {admin.is_active ? 'Deactivate' : 'Activate'}
-                        </button>
+                {admins.map(admin => {
+                  const tHover = toggleHover(admin.is_active);
+                  return (
+                    <tr key={admin.id} className="border-t transition-colors" style={{ borderColor: 'var(--divider)' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-elev-1)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = '')}
+                    >
+                      <td className="px-4 py-3 font-medium" style={{ color: 'var(--text-primary)' }}>{admin.email}</td>
+                      <td className="px-4 py-3 hidden sm:table-cell" style={{ color: 'var(--text-secondary)' }}>{admin.display_name || '—'}</td>
+                      <td className="px-4 py-3 hidden md:table-cell"><RoleBadge role={admin.role} /></td>
+                      <td className="px-4 py-3"><StatusBadge active={admin.is_active} /></td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {/* Toggle */}
+                          <button
+                            onClick={() => toggleActive(admin.id, admin.email, admin.is_active)}
+                            disabled={togglingId === admin.id}
+                            className="px-3 py-1.5 text-xs rounded-lg border font-semibold inline-flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                            {...tHover}
+                          >
+                            {togglingId === admin.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : admin.is_active ? (
+                              <ShieldOff className="w-3.5 h-3.5" />
+                            ) : (
+                              <ShieldCheck className="w-3.5 h-3.5" />
+                            )}
+                            {admin.is_active ? 'Deactivate' : 'Activate'}
+                          </button>
 
-                        {/* Delete Button */}
-                        <button
-                          onClick={() => setDeleteTarget({ id: admin.id, email: admin.email })}
-                          className="admin-delete-btn group relative p-2 rounded-lg transition-all duration-200 overflow-hidden"
-                          title={`Remove ${admin.email}`}
-                          style={{
-                            color: 'var(--text-secondary)',
-                            background: 'transparent',
-                          }}
-                          onMouseEnter={e => {
-                            const btn = e.currentTarget;
-                            btn.style.color = '#EF4444';
-                            btn.style.background = 'color-mix(in srgb, #EF4444 12%, transparent)';
-                            btn.style.transform = 'translateY(-1px)';
-                            btn.style.boxShadow = '0 4px 12px color-mix(in srgb, #EF4444 15%, transparent)';
-                          }}
-                          onMouseLeave={e => {
-                            const btn = e.currentTarget;
-                            btn.style.color = 'var(--text-secondary)';
-                            btn.style.background = 'transparent';
-                            btn.style.transform = '';
-                            btn.style.boxShadow = '';
-                          }}
-                          onMouseDown={e => {
-                            e.currentTarget.style.transform = 'translateY(0px) scale(0.9)';
-                          }}
-                          onMouseUp={e => {
-                            e.currentTarget.style.transform = 'translateY(-1px)';
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 transition-transform duration-200" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          {/* Edit */}
+                          <button
+                            onClick={() => openEdit(admin)}
+                            className="p-2 rounded-lg"
+                            title={`Edit ${admin.email}`}
+                            {...editHover}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+
+                          {/* Delete */}
+                          <button
+                            onClick={() => setDeleteTarget({ id: admin.id, email: admin.email })}
+                            className="p-2 rounded-lg"
+                            title={`Remove ${admin.email}`}
+                            {...deleteHover}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
+      {/* ── Create Modal ── */}
       <AdminModal open={modalOpen} onClose={() => setModalOpen(false)} title="Add Admin User">
         <div className="space-y-4">
           <AdminFormField label="Email" required>
@@ -246,6 +349,63 @@ export function AdminUsersPage() {
         </div>
       </AdminModal>
 
+      {/* ── Edit Modal ── */}
+      <AdminModal open={!!editTarget} onClose={() => setEditTarget(null)} title="Edit Admin">
+        <div className="space-y-4">
+          {/* Email (read-only) */}
+          <AdminFormField label="Email">
+            <AdminInput value={editTarget?.email ?? ''} disabled className="opacity-60 cursor-not-allowed" />
+          </AdminFormField>
+
+          <AdminFormField label="Display Name">
+            <AdminInput
+              value={editForm.display_name}
+              onChange={e => setEditForm(f => ({ ...f, display_name: e.target.value }))}
+              placeholder="John Doe"
+            />
+          </AdminFormField>
+
+          <AdminFormField label="Role">
+            <AdminSelect value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))}>
+              <option value="admin">Admin</option>
+              <option value="super_admin">Super Admin</option>
+            </AdminSelect>
+          </AdminFormField>
+
+          {/* Optional password reset */}
+          <div className="rounded-xl border p-4 space-y-2" style={{ borderColor: 'var(--divider)', background: 'var(--bg-elev-1)' }}>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+              <KeyRound className="w-3.5 h-3.5" /> Reset Password
+              <span className="text-[10px] font-normal normal-case tracking-normal px-1.5 py-0.5 rounded-full"
+                style={{ background: 'color-mix(in srgb, var(--text-secondary) 12%, transparent)' }}>
+                Optional
+              </span>
+            </div>
+            <AdminInput
+              type="password"
+              value={editForm.password}
+              onChange={e => setEditForm(f => ({ ...f, password: e.target.value }))}
+              placeholder="Leave empty to keep current password"
+            />
+          </div>
+
+          {editError && (
+            <div className="px-3 py-2.5 rounded-lg text-sm" style={{
+              background: 'color-mix(in srgb, var(--destructive) 10%, transparent)',
+              color: 'var(--destructive)',
+            }}>{editError}</div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <AdminButton variant="secondary" onClick={() => setEditTarget(null)}>Cancel</AdminButton>
+            <AdminButton onClick={handleEdit} disabled={editSaving}>
+              {editSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : 'Save Changes'}
+            </AdminButton>
+          </div>
+        </div>
+      </AdminModal>
+
+      {/* ── Delete Confirm ── */}
       <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete}
         title="Remove Admin" message={`Remove ${deleteTarget?.email} from admin access? Their auth account will remain but they'll lose admin privileges.`}
         confirmLabel="Remove" />
