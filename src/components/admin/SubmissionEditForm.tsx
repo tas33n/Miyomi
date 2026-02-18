@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Loader2, Palette, Github, Download } from 'lucide-react';
+import { Loader2, Palette, Github, Download, Copy, Check, Link2, StickyNote } from 'lucide-react';
 import { AdminFormField, AdminInput, AdminTextarea, AdminSelect, AdminButton } from '@/components/admin/AdminFormElements';
 import { AdminSmartSelect } from '@/components/admin/AdminSmartSelect';
 import { extractColorFromImage } from '@/utils/extractColorFromImage';
@@ -9,6 +9,7 @@ const PLATFORM_OPTIONS = ['Android', 'iOS', 'Windows', 'macOS', 'Linux', 'Web'];
 const CONTENT_TYPE_OPTIONS = ['Anime', 'Manga', 'Light Novel', 'Webtoon', 'Comics'];
 const EXT_TYPE_OPTIONS = ['Anime', 'Manga', 'Light Novel'];
 const TAG_OPTIONS = ['Free', 'Paid', 'Open Source', 'Ad-free', 'NSFW', 'Reader', 'Tracker', 'Downloader'];
+const EXT_TAG_OPTIONS = ['NSFW', 'SFW', 'Official', 'Fan Source'];
 
 interface SubmissionEditFormProps {
     type: 'app' | 'extension';
@@ -20,10 +21,21 @@ export function SubmissionEditForm({ type, data, onChange }: SubmissionEditFormP
     const [form, setForm] = useState(data);
     const [fetchingGithub, setFetchingGithub] = useState(false);
     const [extractingColor, setExtractingColor] = useState(false);
+    const [copiedManual, setCopiedManual] = useState(false);
+    const [appOptions, setAppOptions] = useState<string[]>([]);
 
     useEffect(() => {
         setForm(data);
     }, [data.id]);
+
+    // Fetch app options for compatible_with
+    useEffect(() => {
+        async function fetchApps() {
+            const { data: apps } = await (await import('@/integrations/supabase/client')).supabase.from('apps').select('name').order('name');
+            if (apps) setAppOptions(apps.map((a: any) => a.name));
+        }
+        if (type === 'extension') fetchApps();
+    }, [type]);
 
     function updateField(field: string, value: any) {
         const newData = { ...form, [field]: value };
@@ -110,7 +122,7 @@ export function SubmissionEditForm({ type, data, onChange }: SubmissionEditFormP
                                 placeholder="https://github.com/owner/repo"
                                 className="text-xs"
                             />
-                            <AdminButton onClick={handleGithubFetch} disabled={fetchingGithub || !form.repo_url} variant="secondary" size="sm">
+                            <AdminButton onClick={handleGithubFetch} disabled={fetchingGithub || !form.repo_url} variant="secondary" className="px-2">
                                 {fetchingGithub ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
                             </AdminButton>
                         </div>
@@ -143,6 +155,17 @@ export function SubmissionEditForm({ type, data, onChange }: SubmissionEditFormP
                             </AdminFormField>
                         )}
                     </div>
+
+                    {type === 'extension' && (
+                        <AdminFormField label="Short Description (Bio)">
+                            <AdminTextarea
+                                className="h-16"
+                                value={form.short_description || ''}
+                                onChange={e => updateField('short_description', e.target.value)}
+                                placeholder="Brief one-line summary..."
+                            />
+                        </AdminFormField>
+                    )}
                 </div>
 
                 <div className="space-y-4">
@@ -158,7 +181,7 @@ export function SubmissionEditForm({ type, data, onChange }: SubmissionEditFormP
                                     <div className="relative w-8 h-8 rounded border overflow-hidden">
                                         <input type="color" value={form.icon_color || '#ffffff'} onChange={e => updateField('icon_color', e.target.value)} className="absolute -top-1 -left-1 w-12 h-12 p-0 border-0" />
                                     </div>
-                                    <AdminButton variant="secondary" size="sm" onClick={() => handleColorExtraction(form.icon_url)} disabled={extractingColor || !form.icon_url}>
+                                    <AdminButton variant="secondary" className="px-2" onClick={() => handleColorExtraction(form.icon_url)} disabled={extractingColor || !form.icon_url}>
                                         Auto-Extract
                                     </AdminButton>
                                 </div>
@@ -186,7 +209,7 @@ export function SubmissionEditForm({ type, data, onChange }: SubmissionEditFormP
                         label="Tags"
                         value={form.tags || []}
                         onChange={val => updateField('tags', val)}
-                        options={TAG_OPTIONS}
+                        options={type === 'app' ? TAG_OPTIONS : EXT_TAG_OPTIONS}
                         placeholder="Add tags..."
                     />
                 </div>
@@ -213,13 +236,60 @@ export function SubmissionEditForm({ type, data, onChange }: SubmissionEditFormP
                         <AdminSmartSelect
                             value={form.compatible_with || []}
                             onChange={val => updateField('compatible_with', val)}
-                            options={[]}
-                            placeholder="Type app names..."
+                            options={appOptions}
+                            placeholder="Select apps..."
                             creatable={true}
                         />
                     </AdminFormField>
                 )}
             </div>
+
+            {type === 'extension' && (
+                <div className="pt-4 border-t border-[var(--divider)] space-y-4">
+                    <h4 className="text-sm font-semibold flex items-center gap-2 text-[var(--text-secondary)]">
+                        <Link2 className="w-4 h-4" /> Install URLs
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <AdminFormField label="Auto Install URL">
+                            <AdminInput value={form.auto_url || ''} onChange={e => updateField('auto_url', e.target.value)} placeholder="tachiyomi://add-repo?url=..." className="text-xs" />
+                        </AdminFormField>
+                        <AdminFormField label="Manual Install URL">
+                            <div className="flex gap-2">
+                                <AdminInput value={form.manual_url || ''} onChange={e => updateField('manual_url', e.target.value)} placeholder="https://raw.githubusercontent.com/..." className="text-xs flex-1" />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (form.manual_url) {
+                                            navigator.clipboard.writeText(form.manual_url);
+                                            setCopiedManual(true);
+                                            toast.success('URL copied!');
+                                            setTimeout(() => setCopiedManual(false), 2000);
+                                        }
+                                    }}
+                                    disabled={!form.manual_url}
+                                    className="px-2 rounded-lg border border-[var(--divider)] hover:bg-[var(--bg-elev-1)] disabled:opacity-50 transition-colors"
+                                >
+                                    {copiedManual ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                                </button>
+                            </div>
+                        </AdminFormField>
+                    </div>
+                    <AdminFormField label="Additional Info">
+                        <AdminTextarea className="h-16" value={form.info || ''} onChange={e => updateField('info', e.target.value)} placeholder="Installation notes, requirements..." />
+                    </AdminFormField>
+                </div>
+            )}
+
+            {form.submitter_notes && (
+                <div className="pt-4 border-t border-[var(--divider)]">
+                    <h4 className="text-sm font-semibold flex items-center gap-2 text-[var(--text-secondary)] mb-2">
+                        <StickyNote className="w-4 h-4" /> Contributor Notes
+                    </h4>
+                    <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 text-sm" style={{ color: 'var(--text-primary)' }}>
+                        {form.submitter_notes}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

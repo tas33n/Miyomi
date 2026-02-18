@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAdminLogger } from '@/hooks/useAdminLogger';
 import { AdminFormField, AdminInput, AdminTextarea, AdminSelect, AdminButton, Label } from '@/components/admin/AdminFormElements';
 import { AdminSmartSelect } from '@/components/admin/AdminSmartSelect';
-import { ArrowLeft, Save, Loader2, Palette, Github, Download } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Palette, Github, Download, Copy, Check, Link2, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { extractColorFromImage } from '@/utils/extractColorFromImage';
 
@@ -14,12 +14,35 @@ const emptyExt = {
     types: [] as string[],
     compatible_with: [] as string[], repo_url: '', source_url: '',
     icon_url: '', icon_color: '',
+    auto_url: '', manual_url: '', discord_url: '',
+    tutorials: [] as any[],
     download_count: 0, likes_count: 0
 };
 
 const PLATFORM_OPTIONS = ['Android', 'iOS', 'Windows', 'macOS', 'Linux', 'Web'];
 const TYPE_OPTIONS = ['Anime', 'Manga', 'Light Novel'];
 const TAG_OPTIONS = ['NSFW', 'SFW', 'Official', 'Fan Source'];
+
+function ManualUrlCopyButton({ url }: { url: string }) {
+    const [copied, setCopied] = useState(false);
+    return (
+        <AdminButton
+            variant="secondary"
+            onClick={() => {
+                if (url) {
+                    navigator.clipboard.writeText(url);
+                    setCopied(true);
+                    toast.success('Copied to clipboard!');
+                    setTimeout(() => setCopied(false), 2000);
+                }
+            }}
+            disabled={!url}
+            className="px-3 shrink-0"
+        >
+            {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+        </AdminButton>
+    );
+}
 
 export function AdminExtensionFormPage() {
     const { id } = useParams();
@@ -34,12 +57,26 @@ export function AdminExtensionFormPage() {
     const [extractingColor, setExtractingColor] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
+    // Tutorial Selection State
+    const [guideOptions, setGuideOptions] = useState<string[]>([]);
+    const [guidesData, setGuidesData] = useState<any[]>([]);
+    const [selectedGuideTitles, setSelectedGuideTitles] = useState<string[]>([]);
+
     useEffect(() => {
         if (id) {
             fetchExt(id);
         }
         fetchAppOptions();
+        fetchGuides();
     }, [id]);
+
+    async function fetchGuides() {
+        const { data } = await supabase.from('guides').select('title, slug').order('title');
+        if (data) {
+            setGuidesData(data);
+            setGuideOptions(data.map(g => g.title));
+        }
+    }
 
     async function handleGithubFetch() {
         if (!form.repo_url) {
@@ -164,6 +201,7 @@ export function AdminExtensionFormPage() {
             if (error) throw error;
             if (data) {
                 const extData = data as any;
+                const loadedTutorials = Array.isArray(extData.tutorials) ? extData.tutorials : [];
                 setForm({
                     name: extData.name,
                     short_description: extData.short_description || '',
@@ -180,9 +218,14 @@ export function AdminExtensionFormPage() {
                     source_url: extData.source_url || '',
                     icon_url: extData.icon_url || '',
                     icon_color: extData.icon_color || '',
+                    auto_url: extData.auto_url || '',
+                    manual_url: extData.manual_url || '',
+                    discord_url: extData.discord_url || '',
+                    tutorials: loadedTutorials,
                     download_count: extData.download_count || 0,
                     likes_count: extData.likes_count || 0
                 });
+                setSelectedGuideTitles(loadedTutorials.map((t: any) => t.title).filter(Boolean));
             }
         } catch (err: any) {
             toast.error('Failed to load extension: ' + err.message);
@@ -218,6 +261,15 @@ export function AdminExtensionFormPage() {
                 return;
             }
 
+            // Reconstruct tutorials
+            const finalTutorials = selectedGuideTitles.map(title => {
+                const guide = guidesData.find(g => g.title === title);
+                if (guide) {
+                    return { title: guide.title, url: `/guides/${guide.slug}`, type: 'guide' };
+                }
+                return { title: title, url: '#', type: 'custom' };
+            });
+
             const payload = {
                 name: form.name,
                 short_description: form.short_description || null,
@@ -235,6 +287,10 @@ export function AdminExtensionFormPage() {
                 source_url: form.source_url || null,
                 icon_url: form.icon_url || null,
                 icon_color: form.icon_color || null,
+                auto_url: form.auto_url || null,
+                manual_url: form.manual_url || null,
+                discord_url: form.discord_url || null,
+                tutorials: finalTutorials,
                 download_count: form.download_count || 0,
                 likes_count: form.likes_count || 0
             };
@@ -377,6 +433,46 @@ export function AdminExtensionFormPage() {
                             <AdminFormField label="Source URL">
                                 <AdminInput value={form.source_url} onChange={e => setForm(f => ({ ...f, source_url: e.target.value }))} placeholder="https://..." />
                             </AdminFormField>
+                            <AdminFormField label="Discord URL">
+                                <AdminInput value={form.discord_url} onChange={e => setForm(f => ({ ...f, discord_url: e.target.value }))} placeholder="https://discord.gg/..." />
+                            </AdminFormField>
+                        </div>
+                    </div>
+
+                    <div className="p-6 rounded-2xl border border-[var(--divider)] bg-[var(--bg-surface)] space-y-4">
+                        <h3 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2 mb-4">
+                            <Link2 className="w-5 h-5" /> Install URLs
+                        </h3>
+                        <AdminFormField label="Auto Install URL">
+                            <AdminInput value={form.auto_url} onChange={e => setForm(f => ({ ...f, auto_url: e.target.value }))} placeholder="tachiyomi://add-repo?url=..." />
+                            <p className="text-xs text-[var(--text-secondary)] mt-1">Deep link that triggers automatic extension source installation in compatible apps.</p>
+                        </AdminFormField>
+                        <AdminFormField label="Manual Install URL">
+                            <div className="flex gap-2">
+                                <AdminInput value={form.manual_url} onChange={e => setForm(f => ({ ...f, manual_url: e.target.value }))} placeholder="https://raw.githubusercontent.com/..." className="flex-1" />
+                                <ManualUrlCopyButton url={form.manual_url} />
+                            </div>
+                            <p className="text-xs text-[var(--text-secondary)] mt-1">URL users can copy to manually add the extension source in their app settings.</p>
+                        </AdminFormField>
+                    </div>
+
+                    {/* Tutorials / Guides Section */}
+                    <div className="p-6 rounded-2xl border border-[var(--divider)] bg-[var(--bg-surface)] space-y-4">
+                        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                            <HelpCircle className="w-4 h-4" /> Tutorials & Guides
+                        </h3>
+                        <div className="space-y-4">
+                            <AdminSmartSelect
+                                label="Linked Guides & Tutorials"
+                                value={selectedGuideTitles}
+                                onChange={setSelectedGuideTitles}
+                                options={guideOptions}
+                                placeholder="Search and select guides..."
+                                creatable={true}
+                            />
+                            <div className="text-xs text-[var(--text-secondary)]">
+                                Select existing guides from the database. Type to create a new custom entry title.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -403,9 +499,11 @@ export function AdminExtensionFormPage() {
                                     <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: form.icon_color || 'transparent' }}></div>
                                 </div>
                                 <AdminInput value={form.icon_color} onChange={e => setForm(f => ({ ...f, icon_color: e.target.value }))} placeholder="#3B82F6" className="font-mono flex-1" />
-                                <AdminButton type="button" variant="secondary" onClick={() => handleColorExtraction(form.icon_url)} disabled={!form.icon_url || extractingColor} title="Auto-extract from Icon" className="px-3">
-                                    {extractingColor ? <Loader2 className="w-4 h-4 animate-spin" /> : <Palette className="w-4 h-4" />}
-                                </AdminButton>
+                                <span title="Auto-extract from Icon">
+                                    <AdminButton type="button" variant="secondary" onClick={() => handleColorExtraction(form.icon_url)} disabled={!form.icon_url || extractingColor} className="px-3">
+                                        {extractingColor ? <Loader2 className="w-4 h-4 animate-spin" /> : <Palette className="w-4 h-4" />}
+                                    </AdminButton>
+                                </span>
                             </div>
                         </AdminFormField>
                     </div>

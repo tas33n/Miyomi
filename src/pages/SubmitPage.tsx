@@ -6,7 +6,8 @@ import { AdminSmartSelect } from '@/components/admin/AdminSmartSelect';
 import { extractColorFromImage } from '@/utils/extractColorFromImage';
 import {
   CheckCircle2, AlertCircle, Loader2, Github, Smartphone, Puzzle,
-  ArrowRight, ArrowLeft, UploadCloud, Palette, Globe, MessageSquare, Mail, ExternalLink
+  ArrowRight, ArrowLeft, UploadCloud, Palette, Globe, MessageSquare, Mail, ExternalLink,
+  Copy, Check, Link2, StickyNote
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Turnstile from 'react-turnstile';
@@ -30,6 +31,7 @@ export function SubmitPage() {
 
   const [form, setForm] = useState({
     name: '',
+    short_description: '',
     description: '',
     author: '',
     version: '',
@@ -39,6 +41,8 @@ export function SubmitPage() {
     download_url: '',
     source_url: '',
     discord_url: '',
+    auto_url: '',
+    manual_url: '',
     icon_url: '',
     icon_color: '',
     platforms: [] as string[],
@@ -49,10 +53,13 @@ export function SubmitPage() {
 
     submitter_name: '',
     submitter_contact: '',
+    submitter_notes: '',
   });
 
   const [fetchingGithub, setFetchingGithub] = useState(false);
   const [extractingColor, setExtractingColor] = useState(false);
+  const [copiedManual, setCopiedManual] = useState(false);
+  const [appOptions, setAppOptions] = useState<string[]>([]);
 
 
   const [nameError, setNameError] = useState<{ message: string; url?: string } | null>(null);
@@ -143,6 +150,15 @@ export function SubmitPage() {
     checkDuplicates();
   }, [form.name, form.repo_url]);
 
+  // Fetch app options for extension compatible_with
+  useEffect(() => {
+    async function fetchApps() {
+      const { data } = await supabase.from('apps').select('name').order('name');
+      if (data) setAppOptions(data.map((a: any) => a.name));
+    }
+    fetchApps();
+  }, []);
+
 
   useEffect(() => {
     if (form.icon_url && !form.icon_color) {
@@ -220,6 +236,7 @@ export function SubmitPage() {
     try {
       const submittedData = {
         name: form.name,
+        short_description: form.short_description,
         description: form.description,
         author: form.author,
         icon_url: form.icon_url,
@@ -237,6 +254,10 @@ export function SubmitPage() {
         } : {
           types: form.content_types,
           compatible_with: form.compatible_with,
+          source_url: form.source_url,
+          language: form.language,
+          auto_url: form.auto_url,
+          manual_url: form.manual_url,
         })
       };
 
@@ -246,6 +267,7 @@ export function SubmitPage() {
         turnstileToken,
         submitterName: form.submitter_name,
         submitterContact: form.submitter_contact,
+        submitterNotes: form.submitter_notes,
       };
 
       const { data, error } = await supabase.functions.invoke('submit-content', {
@@ -459,11 +481,19 @@ export function SubmitPage() {
               )}
             </div>
 
-            <AdminFormField label="Description" required>
+            <AdminFormField label="Short Description (Bio)">
+              <AdminTextarea
+                value={form.short_description} onChange={e => setForm(f => ({ ...f, short_description: e.target.value }))}
+                className="h-20"
+                placeholder="Brief one-line summary..."
+              />
+            </AdminFormField>
+
+            <AdminFormField label={type === 'extension' ? "Overview (Long Description)" : "Long Description"}>
               <AdminTextarea
                 value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                 className="h-32"
-                placeholder="Describe features, sources, and what makes it special..."
+                placeholder="Detailed description of features, sources, and what makes it special... (optional)"
               />
             </AdminFormField>
 
@@ -500,6 +530,54 @@ export function SubmitPage() {
               </AdminFormField>
             </div>
           </div>
+
+          {type === 'extension' && (
+            <div className="p-6 rounded-2xl border border-[var(--divider)] bg-[var(--bg-surface)] space-y-4">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2 mb-4">
+                <Link2 className="w-5 h-5" /> Install URLs
+              </h3>
+              <AdminFormField label="Auto Install URL">
+                <AdminInput
+                  value={form.auto_url} onChange={e => setForm(f => ({ ...f, auto_url: e.target.value }))}
+                  placeholder="tachiyomi://add-repo?url=..."
+                />
+                <p className="text-xs text-[var(--text-secondary)] mt-1">Deep link that triggers automatic extension source installation.</p>
+              </AdminFormField>
+              <AdminFormField label="Manual Install URL">
+                <div className="flex gap-2">
+                  <AdminInput
+                    value={form.manual_url} onChange={e => setForm(f => ({ ...f, manual_url: e.target.value }))}
+                    placeholder="https://raw.githubusercontent.com/..."
+                    className="flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (form.manual_url) {
+                        navigator.clipboard.writeText(form.manual_url);
+                        setCopiedManual(true);
+                        toast.success('Copied!');
+                        setTimeout(() => setCopiedManual(false), 2000);
+                      }
+                    }}
+                    disabled={!form.manual_url}
+                    className="px-3 rounded-lg border border-[var(--divider)] hover:bg-[var(--bg-elev-1)] disabled:opacity-50 transition-colors"
+                  >
+                    {copiedManual ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">URL users can copy to manually add the extension source.</p>
+              </AdminFormField>
+
+              <AdminSmartSelect
+                label="Compatible Apps"
+                value={form.compatible_with}
+                onChange={val => setForm(f => ({ ...f, compatible_with: val }))}
+                options={appOptions}
+                placeholder="Select compatible apps..."
+              />
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -588,6 +666,16 @@ export function SubmitPage() {
                 value={form.submitter_contact} onChange={e => setForm(f => ({ ...f, submitter_contact: e.target.value }))}
                 placeholder="@username or email"
               />
+            </AdminFormField>
+            <AdminFormField label="Notes for Admin">
+              <AdminTextarea
+                value={form.submitter_notes} onChange={e => setForm(f => ({ ...f, submitter_notes: e.target.value }))}
+                className="h-24"
+                placeholder="Any additional notes, context, or special requests for the admin team..."
+              />
+              <p className="text-xs text-[var(--text-secondary)] mt-1 flex items-center gap-1">
+                <StickyNote className="w-3 h-3" /> Visible only to admins during review.
+              </p>
             </AdminFormField>
           </div>
 

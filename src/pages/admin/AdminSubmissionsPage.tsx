@@ -81,6 +81,7 @@ export function AdminSubmissionsPage() {
         const payload: any = {
           name: data.name,
           description: data.description,
+          short_description: data.short_description || null,
           slug: generateSlug(data.name),
           repo_url: data.repo_url || data.url,
           author: sub.author || data.author,
@@ -92,7 +93,7 @@ export function AdminSubmissionsPage() {
           icon_url: data.icon_url,
           icon_color: data.icon_color,
           website_url: data.website_url,
-          discord_url: data.discord_url,
+          discord_url: data.discord_url || null,
         };
 
         if (sub.submission_type === 'app') {
@@ -108,6 +109,9 @@ export function AdminSubmissionsPage() {
           payload.types = data.types || data.content_types || [];
           payload.source_url = data.source_url;
           payload.language = data.language;
+          payload.auto_url = data.auto_url || null;
+          payload.manual_url = data.manual_url || null;
+          payload.tutorials = data.tutorials || [];
         }
 
         const { data: insertedData, error: insertError } = await supabase.from(targetTable).insert(payload).select().single();

@@ -46,7 +46,7 @@ export function useExtension(extensionId: string): { extension: ExtensionData | 
                         github: data.repo_url,
                         website: data.website_url,
                         keywords: data.tags || [],
-                        tutorials: [],
+                        tutorials: Array.isArray(data.tutorials) ? data.tutorials : [],
                         rating: 0,
                         downloadCount: data.download_count || 0,
                         likes: data.likes_count || 0
