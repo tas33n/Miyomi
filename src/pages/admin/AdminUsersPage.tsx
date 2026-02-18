@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import { Plus, Trash2, Users, UserPlus, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Users, UserPlus, Loader2, ShieldCheck, ShieldOff, CheckCircle2 } from 'lucide-react';
 import { AdminModal } from '@/components/admin/AdminModal';
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 import { AdminFormField, AdminInput, AdminSelect, AdminButton, StatusBadge, EmptyState } from '@/components/admin/AdminFormElements';
+import { toast } from 'sonner';
 
 export function AdminUsersPage() {
   const [admins, setAdmins] = useState<Tables<'admins'>[]>([]);
@@ -14,6 +15,7 @@ export function AdminUsersPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -23,9 +25,21 @@ export function AdminUsersPage() {
     setLoading(false);
   }
 
-  async function toggleActive(id: string, active: boolean) {
-    await supabase.from('admins').update({ is_active: !active }).eq('id', id);
-    fetchData();
+  async function toggleActive(id: string, email: string, active: boolean) {
+    setTogglingId(id);
+    try {
+      const { error: err } = await supabase.from('admins').update({ is_active: !active }).eq('id', id);
+      if (err) throw err;
+      toast.success(
+        !active ? `${email} activated` : `${email} deactivated`,
+        { icon: !active ? <ShieldCheck className="w-4 h-4" /> : <ShieldOff className="w-4 h-4" /> }
+      );
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update status');
+    } finally {
+      setTogglingId(null);
+    }
   }
 
   async function handleCreate() {
@@ -39,9 +53,14 @@ export function AdminUsersPage() {
       if (data?.error) throw new Error(data.error);
       setModalOpen(false);
       setForm({ email: '', password: '', display_name: '', role: 'admin' });
+      toast.success(`Admin "${form.email}" created successfully!`, {
+        icon: <CheckCircle2 className="w-4 h-4" />,
+      });
       fetchData();
     } catch (err: any) {
-      setError(err.message || 'Failed to create admin');
+      const msg = err.message || 'Failed to create admin';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -49,12 +68,18 @@ export function AdminUsersPage() {
 
   async function handleDelete() {
     if (!deleteTarget) return;
+    const email = deleteTarget.email;
     try {
-      await supabase.functions.invoke('manage-admin', {
-        body: { action: 'delete', email: deleteTarget.email },
+      const { data, error: fnError } = await supabase.functions.invoke('manage-admin', {
+        body: { action: 'delete', email },
       });
-    } catch (err) {
-      console.error('Delete failed:', err);
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Admin "${email}" removed`, {
+        icon: <Trash2 className="w-4 h-4" />,
+      });
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to remove admin');
     }
     setDeleteTarget(null);
     fetchData();
@@ -95,16 +120,90 @@ export function AdminUsersPage() {
                     <td className="px-4 py-3 hidden sm:table-cell" style={{ color: 'var(--text-secondary)' }}>{admin.display_name || '—'}</td>
                     <td className="px-4 py-3"><StatusBadge active={admin.is_active} /></td>
                     <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => toggleActive(admin.id, admin.is_active)}
-                          className="px-2.5 py-1.5 text-xs rounded-lg border font-medium transition-colors"
-                          style={{ borderColor: 'var(--divider)', color: 'var(--text-secondary)' }}
+                      <div className="flex items-center justify-end gap-1.5">
+                        {/* Toggle Active Button */}
+                        <button
+                          onClick={() => toggleActive(admin.id, admin.email, admin.is_active)}
+                          disabled={togglingId === admin.id}
+                          className="admin-action-btn group relative px-3 py-1.5 text-xs rounded-lg border font-semibold transition-all duration-200 overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+                          style={{
+                            borderColor: admin.is_active ? 'color-mix(in srgb, #F59E0B 40%, var(--divider))' : 'color-mix(in srgb, #10B981 40%, var(--divider))',
+                            color: admin.is_active ? '#F59E0B' : '#10B981',
+                            background: admin.is_active
+                              ? 'color-mix(in srgb, #F59E0B 6%, transparent)'
+                              : 'color-mix(in srgb, #10B981 6%, transparent)',
+                          }}
+                          onMouseEnter={e => {
+                            const btn = e.currentTarget;
+                            btn.style.background = admin.is_active
+                              ? 'color-mix(in srgb, #F59E0B 18%, transparent)'
+                              : 'color-mix(in srgb, #10B981 18%, transparent)';
+                            btn.style.borderColor = admin.is_active ? '#F59E0B' : '#10B981';
+                            btn.style.transform = 'translateY(-1px)';
+                            btn.style.boxShadow = admin.is_active
+                              ? '0 4px 12px color-mix(in srgb, #F59E0B 20%, transparent)'
+                              : '0 4px 12px color-mix(in srgb, #10B981 20%, transparent)';
+                          }}
+                          onMouseLeave={e => {
+                            const btn = e.currentTarget;
+                            btn.style.background = admin.is_active
+                              ? 'color-mix(in srgb, #F59E0B 6%, transparent)'
+                              : 'color-mix(in srgb, #10B981 6%, transparent)';
+                            btn.style.borderColor = admin.is_active
+                              ? 'color-mix(in srgb, #F59E0B 40%, var(--divider))'
+                              : 'color-mix(in srgb, #10B981 40%, var(--divider))';
+                            btn.style.transform = '';
+                            btn.style.boxShadow = '';
+                          }}
+                          onMouseDown={e => {
+                            e.currentTarget.style.transform = 'translateY(0px) scale(0.97)';
+                          }}
+                          onMouseUp={e => {
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                          }}
                         >
+                          {togglingId === admin.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : admin.is_active ? (
+                            <ShieldOff className="w-3.5 h-3.5" />
+                          ) : (
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                          )}
                           {admin.is_active ? 'Deactivate' : 'Activate'}
                         </button>
-                        <button onClick={() => setDeleteTarget({ id: admin.id, email: admin.email })}
-                          className="p-2 rounded-lg transition-colors" style={{ color: 'var(--text-secondary)' }}
-                        ><Trash2 className="w-4 h-4" /></button>
+
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => setDeleteTarget({ id: admin.id, email: admin.email })}
+                          className="admin-delete-btn group relative p-2 rounded-lg transition-all duration-200 overflow-hidden"
+                          title={`Remove ${admin.email}`}
+                          style={{
+                            color: 'var(--text-secondary)',
+                            background: 'transparent',
+                          }}
+                          onMouseEnter={e => {
+                            const btn = e.currentTarget;
+                            btn.style.color = '#EF4444';
+                            btn.style.background = 'color-mix(in srgb, #EF4444 12%, transparent)';
+                            btn.style.transform = 'translateY(-1px)';
+                            btn.style.boxShadow = '0 4px 12px color-mix(in srgb, #EF4444 15%, transparent)';
+                          }}
+                          onMouseLeave={e => {
+                            const btn = e.currentTarget;
+                            btn.style.color = 'var(--text-secondary)';
+                            btn.style.background = 'transparent';
+                            btn.style.transform = '';
+                            btn.style.boxShadow = '';
+                          }}
+                          onMouseDown={e => {
+                            e.currentTarget.style.transform = 'translateY(0px) scale(0.9)';
+                          }}
+                          onMouseUp={e => {
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 transition-transform duration-200" />
+                        </button>
                       </div>
                     </td>
                   </tr>
