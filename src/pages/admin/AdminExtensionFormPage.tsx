@@ -8,8 +8,18 @@ import { ArrowLeft, Save, Loader2, Palette, Github, Download, Copy, Check, Link2
 import { toast } from 'sonner';
 import { extractColorFromImage } from '@/utils/extractColorFromImage';
 
+function slugify(text: string): string {
+    return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
 const emptyExt = {
-    name: '', short_description: '', description: '', author: '', category: '', language: '',
+    name: '', slug: '', short_description: '', description: '', author: '', category: '', language: '',
     status: 'approved', platforms: [] as string[], tags: [] as string[],
     types: [] as string[],
     compatible_with: [] as string[], repo_url: '', source_url: '',
@@ -56,6 +66,7 @@ export function AdminExtensionFormPage() {
     const [appsData, setAppsData] = useState<any[]>([]); // Store full app data for relationships
     const [extractingColor, setExtractingColor] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
     // Tutorial Selection State
     const [guideOptions, setGuideOptions] = useState<string[]>([]);
@@ -124,6 +135,12 @@ export function AdminExtensionFormPage() {
         }
     }, [form.icon_url]);
 
+    useEffect(() => {
+        if (!slugManuallyEdited && form.name) {
+            setForm(f => ({ ...f, slug: slugify(f.name) }));
+        }
+    }, [form.name, slugManuallyEdited]);
+
     async function handleColorExtraction(url: string) {
         setExtractingColor(true);
         const color = await extractColorFromImage(url);
@@ -159,6 +176,19 @@ export function AdminExtensionFormPage() {
         }, 500);
         return () => clearTimeout(timer);
     }, [form.repo_url]);
+
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (form.slug.trim()) {
+                const dup = await checkDuplicate('slug', form.slug);
+                setErrors(prev => ({
+                    ...prev,
+                    slug: dup ? `An extension with the slug "${form.slug}" already exists (${dup.name}).` : ''
+                }));
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [form.slug]);
 
     async function fetchAppOptions() {
         // Fetch name and fork_of to handle smart compatibility
@@ -204,6 +234,7 @@ export function AdminExtensionFormPage() {
                 const loadedTutorials = Array.isArray(extData.tutorials) ? extData.tutorials : [];
                 setForm({
                     name: extData.name,
+                    slug: extData.slug || '',
                     short_description: extData.short_description || '',
                     description: extData.description || '',
                     author: extData.author || '',
@@ -225,6 +256,7 @@ export function AdminExtensionFormPage() {
                     download_count: extData.download_count || 0,
                     likes_count: extData.likes_count || 0
                 });
+                if (extData.slug) setSlugManuallyEdited(true);
                 setSelectedGuideTitles(loadedTutorials.map((t: any) => t.title).filter(Boolean));
             }
         } catch (err: any) {
@@ -235,7 +267,7 @@ export function AdminExtensionFormPage() {
         }
     }
 
-    async function checkDuplicate(field: 'name' | 'repo_url', value: string) {
+    async function checkDuplicate(field: 'name' | 'slug' | 'repo_url', value: string) {
         if (!value) return false;
         let query = (supabase.from('extensions') as any).select('id, name').eq(field, value);
         if (id) query = query.neq('id', id);
@@ -272,6 +304,7 @@ export function AdminExtensionFormPage() {
 
             const payload = {
                 name: form.name,
+                slug: form.slug || slugify(form.name) || null,
                 short_description: form.short_description || null,
                 description: form.description || null,
                 author: form.author || null,
@@ -392,6 +425,20 @@ export function AdminExtensionFormPage() {
                                 placeholder="Extension Name"
                                 className={errors.name ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.5)]' : ''}
                             />
+                        </AdminFormField>
+                        <AdminFormField label="Slug (URL identifier)" required>
+                            {errors.slug && <div className="text-red-500 text-xs font-semibold mb-1 animate-pulse">⚠️ {errors.slug}</div>}
+                            <AdminInput
+                                value={form.slug}
+                                onChange={e => {
+                                    setSlugManuallyEdited(true);
+                                    setForm(f => ({ ...f, slug: slugify(e.target.value) }));
+                                    if (errors.slug) setErrors(prev => ({ ...prev, slug: '' }));
+                                }}
+                                placeholder="auto-generated-from-name"
+                                className={errors.slug ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.5)]' : ''}
+                            />
+                            <p className="text-xs text-[var(--text-secondary)] mt-1">Used in the URL: /extensions/<strong>{form.slug || '...'}</strong></p>
                         </AdminFormField>
                         <AdminFormField label="Short Description (Bio)">
                             <AdminTextarea className="h-20" value={form.short_description} onChange={e => setForm(f => ({ ...f, short_description: e.target.value }))} placeholder="Brief summary displayed in header..." />

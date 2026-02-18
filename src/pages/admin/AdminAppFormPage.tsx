@@ -8,13 +8,23 @@ import { ArrowLeft, Save, Loader2, Github, Download, Palette, HelpCircle } from 
 import { toast } from 'sonner';
 import { extractColorFromImage } from '@/utils/extractColorFromImage';
 
+function slugify(text: string): string {
+    return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
 const emptyApp = {
-    name: '', description: '', short_description: '', author: '', category: '', version: '',
+    name: '', slug: '', description: '', short_description: '', author: '', category: '', version: '',
     status: 'approved', platforms: [] as string[], tags: [] as string[],
     content_types: [] as string[],
     repo_url: '', download_url: '', website_url: '', icon_url: '', icon_color: '',
     fork_of: '', upstream_url: '', discord_url: '',
-    tutorials: [] as any[], // JSONB
+    tutorials: [] as any[],
     download_count: 0, likes_count: 0
 };
 
@@ -32,6 +42,7 @@ export function AdminAppFormPage() {
     const [fetchingGithub, setFetchingGithub] = useState(false);
     const [extractingColor, setExtractingColor] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
     // Tutorial Selection State
     const [guideOptions, setGuideOptions] = useState<string[]>([]);
@@ -51,6 +62,12 @@ export function AdminAppFormPage() {
             handleColorExtraction(form.icon_url);
         }
     }, [form.icon_url]);
+
+    useEffect(() => {
+        if (!slugManuallyEdited && form.name) {
+            setForm(f => ({ ...f, slug: slugify(f.name) }));
+        }
+    }, [form.name, slugManuallyEdited]);
 
     async function handleColorExtraction(url: string) {
         setExtractingColor(true);
@@ -101,6 +118,19 @@ export function AdminAppFormPage() {
         return () => clearTimeout(timer);
     }, [form.website_url]);
 
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (form.slug.trim()) {
+                const dup = await checkDuplicate('slug', form.slug);
+                setErrors(prev => ({
+                    ...prev,
+                    slug: dup ? `An app with the slug "${form.slug}" already exists (${dup.name}).` : ''
+                }));
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [form.slug]);
+
     async function fetchGuides() {
         const { data } = await supabase.from('guides').select('title, slug').order('title');
         if (data) {
@@ -118,6 +148,7 @@ export function AdminAppFormPage() {
                 const loadedTutorials = Array.isArray(appData.tutorials) ? appData.tutorials : [];
                 setForm({
                     name: appData.name,
+                    slug: appData.slug || '',
                     short_description: appData.short_description || '',
                     description: appData.description || '',
                     author: appData.author || '',
@@ -139,6 +170,7 @@ export function AdminAppFormPage() {
                     download_count: appData.download_count || 0,
                     likes_count: appData.likes_count || 0
                 });
+                if (appData.slug) setSlugManuallyEdited(true);
                 // Map tutorials objects to titles
                 setSelectedGuideTitles(loadedTutorials.map((t: any) => t.title).filter(Boolean));
             }
@@ -202,7 +234,7 @@ export function AdminAppFormPage() {
         }
     }
 
-    async function checkDuplicate(field: 'name' | 'repo_url' | 'website_url', value: string) {
+    async function checkDuplicate(field: 'name' | 'slug' | 'repo_url' | 'website_url', value: string) {
         if (!value) return false;
         let query = supabase.from('apps').select('id, name').eq(field, value);
         if (id) query = query.neq('id', id);
@@ -239,6 +271,7 @@ export function AdminAppFormPage() {
 
             const payload = {
                 name: form.name,
+                slug: form.slug || slugify(form.name) || null,
                 short_description: form.short_description || null,
                 description: form.description || null,
                 author: form.author || null,
@@ -359,6 +392,20 @@ export function AdminAppFormPage() {
                                 placeholder="App Name"
                                 className={errors.name ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.5)]' : ''}
                             />
+                        </AdminFormField>
+                        <AdminFormField label="Slug (URL identifier)" required>
+                            {errors.slug && <div className="text-red-500 text-xs font-semibold mb-1 animate-pulse">⚠️ {errors.slug}</div>}
+                            <AdminInput
+                                value={form.slug}
+                                onChange={e => {
+                                    setSlugManuallyEdited(true);
+                                    setForm(f => ({ ...f, slug: slugify(e.target.value) }));
+                                    if (errors.slug) setErrors(prev => ({ ...prev, slug: '' }));
+                                }}
+                                placeholder="auto-generated-from-name"
+                                className={errors.slug ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.5)]' : ''}
+                            />
+                            <p className="text-xs text-[var(--text-secondary)] mt-1">Used in the URL: /software/<strong>{form.slug || '...'}</strong></p>
                         </AdminFormField>
                         <AdminFormField label="Short Description (Bio)">
                             <AdminTextarea className="h-20" value={form.short_description} onChange={e => setForm(f => ({ ...f, short_description: e.target.value }))} placeholder="Brief summary displayed in header..." />

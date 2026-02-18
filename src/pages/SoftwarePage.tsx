@@ -360,7 +360,7 @@ export function SoftwarePage({ onNavigate }: SoftwarePageProps) {
                 forkOf={app.forkOf}
                 upstreamUrl={app.upstreamUrl}
                 isHighlighted={highlightedId === app.id}
-                onClick={() => handleAppClick(app.id)}
+                onClick={() => handleAppClick(app.slug || app.id)}
               />
             ))}
           </div>
@@ -386,7 +386,7 @@ export function SoftwarePage({ onNavigate }: SoftwarePageProps) {
                 forkOf={app.forkOf}
                 upstreamUrl={app.upstreamUrl}
                 isHighlighted={highlightedId === app.id}
-                onClick={() => handleAppClick(app.id)}
+                onClick={() => handleAppClick(app.slug || app.id)}
               />
             ))}
           </div>
