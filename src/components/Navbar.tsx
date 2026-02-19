@@ -1,6 +1,6 @@
 "use client";
 
-import { X, ChevronDown, Github, Instagram, Youtube, Facebook, Plus, Search, PlusCircle } from 'lucide-react';
+import { X, ChevronDown, Github, Instagram, Youtube, Facebook, Plus, Search, Menu } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import { SearchModal } from './SearchModal';
@@ -292,131 +292,142 @@ export function Navbar({ onNavigate }: NavbarProps) {
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />
               ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <Menu className="w-6 h-6" />
               )}
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/30 z-[997] md:hidden transition-opacity duration-200"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu Overlay (Backdrop) */}
       <div
-        className={`fixed top-16 left-0 right-0 z-[998] md:hidden transition-all duration-200 ${mobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0 pointer-events-none'
+        className={`fixed inset-0 top-16 z-[997] md:hidden transition-all duration-300 ${mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
           }`}
         style={{
-          backgroundColor: 'var(--bg-page)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          backgroundColor: 'rgba(0,0,0,0.2)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
         }}
+        onClick={() => setMobileMenuOpen(false)}
+      />
+
+      {/* Mobile Menu Dropdown (Content) */}
+      <div
+        className={`fixed top-16 left-0 right-0 z-[998] md:hidden bg-[var(--bg-page)]/95 backdrop-blur-xl border-b border-[var(--divider)] shadow-lg transition-all duration-300 origin-top ${mobileMenuOpen ? 'translate-y-0 opacity-100 scale-y-100' : '-translate-y-4 opacity-0 scale-y-95 pointer-events-none'
+          }`}
       >
-        <div className="max-h-[calc(100vh-4rem)] overflow-y-auto px-8 py-6">
-          {/* Pages Section */}
-          <div className="mb-3">
-            <button
-              onClick={() => toggleSection('pages')}
-              className="w-full flex items-center justify-between py-2.5 text-[var(--text-primary)] font-['Inter',sans-serif]"
-              style={{ fontWeight: 500 }}
-            >
-              <span>Pages</span>
-              <Plus
-                className={`w-5 h-5 transition-transform duration-200 ${expandedSection === 'pages' ? 'rotate-45' : ''
+        <div className="max-h-[calc(100vh-5rem)] overflow-y-auto w-full">
+          <div className="px-6 py-6 max-w-lg mx-auto">
+            {/* Pages Section */}
+            <div className="mb-3">
+              <button
+                onClick={() => toggleSection('pages')}
+                className="w-full flex items-center justify-between py-2.5 text-[var(--text-primary)] font-['Inter',sans-serif]"
+                style={{ fontWeight: 500 }}
+              >
+                <span>Pages</span>
+                <Plus
+                  className={`w-5 h-5 transition-transform duration-200 ${expandedSection === 'pages' ? 'rotate-45' : ''
+                    }`}
+                />
+              </button>
+              <div
+                className={`overflow-hidden transition-all duration-200 ${expandedSection === 'pages' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                   }`}
-              />
-            </button>
-            <div
-              className={`overflow-hidden transition-all duration-200 ${expandedSection === 'pages' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                }`}
-            >
-              <div className="space-y-0.5 mt-2">
-                {mainNavItems.map((item) => (
-                  <button
-                    key={item.path}
-                    onClick={() => handleClick(item.path)}
-                    className={`w-full text-center py-2 px-4 rounded-lg transition-colors ${isActive(item.path)
-                      ? 'text-[var(--brand)] bg-[var(--chip-bg)]'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-elev-1)]'
-                      }`}
-                    style={{ fontWeight: isActive(item.path) ? 600 : 400 }}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+              >
+                <div className="space-y-0.5 mt-2">
+                  {mainNavItems.map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => handleClick(item.path)}
+                      className={`w-full text-left py-2 px-4 pl-8 rounded-lg transition-colors ${isActive(item.path)
+                        ? 'text-[var(--brand)] bg-[var(--chip-bg)]'
+                        : 'text-[var(--text-secondary)] hover:bg-[var(--bg-elev-1)]'
+                        }`}
+                      style={{ fontWeight: isActive(item.path) ? 600 : 400 }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="border-b border-[var(--divider)] mt-3"></div>
+            </div>
+
+            {/* Guides Section */}
+            <div className="mb-3">
+              <button
+                onClick={() => toggleSection('guides')}
+                className="w-full flex items-center justify-between py-2.5 text-[var(--text-primary)] font-['Inter',sans-serif]"
+                style={{ fontWeight: 500 }}
+              >
+                <span>Guides</span>
+                <Plus
+                  className={`w-5 h-5 transition-transform duration-200 ${expandedSection === 'guides' ? 'rotate-45' : ''
+                    }`}
+                />
+              </button>
+              <div
+                className={`overflow-hidden transition-all duration-200 ${expandedSection === 'guides' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+              >
+                <div className="space-y-0.5 mt-2">
+                  {guidesNavItems.map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => handleClick(item.path)}
+                      className={`w-full text-left py-2 px-4 pl-8 rounded-lg transition-colors ${isActive(item.path)
+                        ? 'text-[var(--brand)] bg-[var(--chip-bg)]'
+                        : 'text-[var(--text-secondary)] hover:bg-[var(--bg-elev-1)]'
+                        }`}
+                      style={{ fontWeight: isActive(item.path) ? 600 : 400 }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="border-b border-[var(--divider)] mt-3"></div>
+            </div>
+
+            {/* Contribute Link */}
+            <div className="mb-3">
+              <button
+                onClick={() => handleClick('/contribute')}
+                className={`w-full text-left py-2.5 text-[var(--text-primary)] font-['Inter',sans-serif] flex justify-between items-center ${isActive('/contribute') ? 'text-[var(--brand)] font-medium' : 'hover:text-[var(--brand)]'}`}
+                style={{ fontWeight: 500 }}
+              >
+                Contribute
+              </button>
+              <div className="border-b border-[var(--divider)] mt-3"></div>
+            </div>
+
+            {/* Appearance Section */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between py-2.5">
+                <span className="text-[var(--text-primary)] font-['Inter',sans-serif]" style={{ fontWeight: 500 }}>
+                  appearance
+                </span>
+                <ThemeToggle />
               </div>
             </div>
-            <div className="border-b border-[var(--divider)] mt-3"></div>
-          </div>
 
-          {/* Guides Section */}
-          <div className="mb-3">
-            <button
-              onClick={() => toggleSection('guides')}
-              className="w-full flex items-center justify-between py-2.5 text-[var(--text-primary)] font-['Inter',sans-serif]"
-              style={{ fontWeight: 500 }}
-            >
-              <span>Guides</span>
-              <Plus
-                className={`w-5 h-5 transition-transform duration-200 ${expandedSection === 'guides' ? 'rotate-45' : ''
-                  }`}
-              />
-            </button>
-            <div
-              className={`overflow-hidden transition-all duration-200 ${expandedSection === 'guides' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                }`}
-            >
-              <div className="space-y-0.5 mt-2">
-                {guidesNavItems.map((item) => (
-                  <button
-                    key={item.path}
-                    onClick={() => handleClick(item.path)}
-                    className={`w-full text-center py-2 px-4 rounded-lg transition-colors ${isActive(item.path)
-                      ? 'text-[var(--brand)] bg-[var(--chip-bg)]'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-elev-1)]'
-                      }`}
-                    style={{ fontWeight: isActive(item.path) ? 600 : 400 }}
+            {/* Social Icons */}
+            <div className="pt-3 border-t border-[var(--divider)]">
+              <div className="flex items-center justify-center gap-4">
+                {socialLinks.map((social, index) => (
+                  <a
+                    key={index}
+                    href={social.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 text-[var(--text-secondary)] hover:text-[var(--brand)] transition-colors"
+                    aria-label={social.label}
                   >
-                    {item.label}
-                  </button>
+                    {social.icon}
+                  </a>
                 ))}
               </div>
-            </div>
-            <div className="border-b border-[var(--divider)] mt-3"></div>
-          </div>
-
-          {/* Appearance Section */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between py-2.5">
-              <span className="text-[var(--text-primary)] font-['Inter',sans-serif]" style={{ fontWeight: 500 }}>
-                Appearance
-              </span>
-              <ThemeToggle />
-            </div>
-          </div>
-
-          {/* Social Icons */}
-          <div className="pt-3 border-t border-[var(--divider)]">
-            <div className="flex items-center justify-center gap-4">
-              {socialLinks.map((social, index) => (
-                <a
-                  key={index}
-                  href={social.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2.5 text-[var(--text-secondary)] hover:text-[var(--brand)] transition-colors"
-                  aria-label={social.label}
-                >
-                  {social.icon}
-                </a>
-              ))}
             </div>
           </div>
         </div>
