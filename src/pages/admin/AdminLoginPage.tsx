@@ -1,7 +1,8 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useSessionTracker } from '@/hooks/useSessionTracker';
 import { supabase } from '@/integrations/supabase/client';
 import { Shield, Lock, Mail, Eye, EyeOff, Loader2, UserPlus, Zap, Sword, Skull, Wind, Waves } from 'lucide-react';
 import { toast } from 'sonner';
@@ -128,6 +129,7 @@ export function AdminLoginPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading, signInWithEmail, signInWithGoogle } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
+  const { trackUnauthorizedAttempt } = useSessionTracker();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -135,6 +137,7 @@ export function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
+  const unauthorizedHandled = useRef(false);
 
   // System State
   const [checkingSystem, setCheckingSystem] = useState(true);
@@ -143,7 +146,6 @@ export function AdminLoginPage() {
   // Theme State
   const [theme, setTheme] = useState(ANIME_THEMES[0]);
 
-  // Initialize Random Theme with 1-Week Persistence
   useEffect(() => {
     const storedThemeId = localStorage.getItem('admin_theme_id');
     const storedExpiry = localStorage.getItem('admin_theme_expiry');
@@ -155,7 +157,6 @@ export function AdminLoginPage() {
     if (storedThemeId && storedExpiry) {
       const expiry = parseInt(storedExpiry, 10);
       if (now < expiry) {
-        // Theme is still valid
         const found = ANIME_THEMES.find(t => t.id === storedThemeId);
         if (found) {
           selectedTheme = found;
@@ -165,7 +166,6 @@ export function AdminLoginPage() {
     }
 
     if (shouldUpdate) {
-      // Pick a random theme
       selectedTheme = ANIME_THEMES[Math.floor(Math.random() * ANIME_THEMES.length)];
 
       // Set expiry for 1 week (7 days * 24h * 60m * 60s * 1000ms)
@@ -179,7 +179,6 @@ export function AdminLoginPage() {
     setTheme(selectedTheme);
   }, []);
 
-  // Check system status
   useEffect(() => {
     async function checkSystem() {
       try {
@@ -199,7 +198,6 @@ export function AdminLoginPage() {
     checkSystem();
   }, []);
 
-  // Redirect if logged in
   useEffect(() => {
     if (!authLoading && !adminLoading && user && isAdmin) {
       navigate('/admin/dashboard', { replace: true });
@@ -240,7 +238,26 @@ export function AdminLoginPage() {
   };
 
   const isLoading = authLoading || adminLoading || checkingSystem;
-  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x0000000000000000000000AA';
+  const emailLoginEnabled = import.meta.env.VITE_EMAIL_LOGIN_ENABLED === 'true';
+
+  useEffect(() => {
+    if (authLoading || adminLoading || !user || isAdmin || needsSetup || unauthorizedHandled.current) return;
+
+    unauthorizedHandled.current = true;
+    const userEmail = user.email || 'unknown';
+    const provider = user.app_metadata?.provider || 'email';
+
+    (async () => {
+      try {
+        await trackUnauthorizedAttempt(userEmail, provider);
+      } catch (err) {
+        console.error('Failed to track unauthorized attempt:', err);
+      }
+      await supabase.auth.signOut();
+      navigate('/unauthorized', { replace: true, state: { email: userEmail } });
+    })();
+  }, [authLoading, adminLoading, user, isAdmin, needsSetup, trackUnauthorizedAttempt, navigate]);
 
   if (isLoading) {
     return (
@@ -255,19 +272,6 @@ export function AdminLoginPage() {
     );
   }
 
-  // Access Denied
-  if (user && !isAdmin && !needsSetup) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-zinc-900 text-white font-['Poppins']">
-        <div className="text-center">
-          <Lock className="w-16 h-16 mx-auto mb-4 text-red-500" />
-          <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
-          <p className="text-gray-400 mb-6">This area is for higher power levels only.</p>
-          <button onClick={() => navigate('/')} className="px-6 py-2 bg-red-600 rounded-full hover:bg-red-700 transition">Return Home</button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden font-['Poppins'] bg-zinc-950">
@@ -349,98 +353,114 @@ export function AdminLoginPage() {
           <p className="text-white/70 italic font-medium">{theme.quote}</p>
         </div>
 
-        {/* Login Form */}
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-white/60 uppercase tracking-widest pl-1">Email</label>
-            <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-white transition-colors" />
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="w-full bg-black/30 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 focus:bg-black/50 transition-all font-medium"
-                placeholder="admin@miyomi.dev"
-                style={{ borderColor: `color-mix(in srgb, ${theme.accentColor} 30%, transparent)` }}
-                required
-              />
+        {/* Email/Password Form — shown in setup mode OR when VITE_EMAIL_LOGIN_ENABLED=true */}
+        {(needsSetup || emailLoginEnabled) && (
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-white/60 uppercase tracking-widest pl-1">Email</label>
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-white transition-colors" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="w-full bg-black/30 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 focus:bg-black/50 transition-all font-medium"
+                  placeholder="admin@miyomi.dev"
+                  style={{ borderColor: `color-mix(in srgb, ${theme.accentColor} 30%, transparent)` }}
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-white/60 uppercase tracking-widest pl-1">Password</label>
-            <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-white transition-colors" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full bg-black/30 border border-white/10 rounded-xl py-3.5 pl-12 pr-12 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 focus:bg-black/50 transition-all font-medium"
-                placeholder="••••••••"
-                style={{ borderColor: `color-mix(in srgb, ${theme.accentColor} 30%, transparent)` }}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-white/60 uppercase tracking-widest pl-1">Password</label>
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 group-focus-within:text-white transition-colors" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="w-full bg-black/30 border border-white/10 rounded-xl py-3.5 pl-12 pr-12 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 focus:bg-black/50 transition-all font-medium"
+                  placeholder="••••••••"
+                  style={{ borderColor: `color-mix(in srgb, ${theme.accentColor} 30%, transparent)` }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
-          </div>
 
-          {!needsSetup && (
-            <div className="pt-1 flex justify-center opacity-90 scale-90 origin-center">
-              <Turnstile
-                sitekey={siteKey}
-                onVerify={(token) => setTurnstileToken(token)}
-                theme="dark"
-              />
-            </div>
-          )}
-
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-3 rounded-lg bg-red-500/20 border border-red-500/30 text-red-200 text-sm font-medium flex items-center gap-2"
-            >
-              <Shield className="w-4 h-4" />
-              {error}
-            </motion.div>
-          )}
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            disabled={submitting || (!turnstileToken && !needsSetup)}
-            className="w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-            style={{
-              background: `linear-gradient(45deg, ${theme.primaryColor}, ${theme.accentColor})`,
-              boxShadow: `0 4px 20px ${theme.primaryColor}60`
-            }}
-          >
-            {submitting ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                {needsSetup ? <UserPlus className="w-5 h-5" /> : <div className="text-xl">🚀</div>}
-                <span className="tracking-wide">{needsSetup ? 'CREATE SYSTEM' : 'ENTER PORTAL'}</span>
-              </>
+            {!needsSetup && (
+              <div className="pt-1 flex justify-center opacity-90 scale-90 origin-center">
+                <Turnstile
+                  sitekey={siteKey}
+                  onVerify={(token) => setTurnstileToken(token)}
+                  theme="dark"
+                />
+              </div>
             )}
-          </motion.button>
-        </form>
 
-        {/* Google OAuth Divider & Button - only shown when NOT in setup mode */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 rounded-lg bg-red-500/20 border border-red-500/30 text-red-200 text-sm font-medium flex items-center gap-2"
+              >
+                <Shield className="w-4 h-4" />
+                {error}
+              </motion.div>
+            )}
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              disabled={submitting || (!turnstileToken && !needsSetup)}
+              className="w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+              style={{
+                background: `linear-gradient(45deg, ${theme.primaryColor}, ${theme.accentColor})`,
+                boxShadow: `0 4px 20px ${theme.primaryColor}60`
+              }}
+            >
+              {submitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  {needsSetup ? <UserPlus className="w-5 h-5" /> : <div className="text-xl">🚀</div>}
+                  <span className="tracking-wide">{needsSetup ? 'CREATE SYSTEM' : 'ENTER PORTAL'}</span>
+                </>
+              )}
+            </motion.button>
+          </form>
+        )}
+
+        {/* Google OAuth — shown when NOT in setup mode */}
         {!needsSetup && (
-          <div className="mt-5 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent)' }} />
-              <span className="text-xs font-semibold text-white/30 uppercase tracking-widest">or</span>
-              <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent)' }} />
-            </div>
+          <div className="space-y-4">
+            {/* Divider — only when email login is also visible */}
+            {emailLoginEnabled && (
+              <div className="flex items-center gap-3 mt-5">
+                <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent)' }} />
+                <span className="text-xs font-semibold text-white/30 uppercase tracking-widest">or</span>
+                <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent)' }} />
+              </div>
+            )}
+
+            {!emailLoginEnabled && error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 rounded-lg bg-red-500/20 border border-red-500/30 text-red-200 text-sm font-medium flex items-center gap-2"
+              >
+                <Shield className="w-4 h-4" />
+                {error}
+              </motion.div>
+            )}
 
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -457,9 +477,10 @@ export function AdminLoginPage() {
                   setGoogleLoading(false);
                 }
               }}
-              className="w-full py-3.5 rounded-xl font-bold text-white/90 shadow-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 hover:border-white/20 backdrop-blur-sm"
+              className="w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 hover:border-white/20"
               style={{
-                background: 'rgba(255,255,255,0.06)',
+                background: emailLoginEnabled ? 'rgba(255,255,255,0.06)' : `linear-gradient(45deg, ${theme.primaryColor}, ${theme.accentColor})`,
+                boxShadow: emailLoginEnabled ? 'none' : `0 4px 20px ${theme.primaryColor}60`
               }}
             >
               {googleLoading ? (
@@ -472,10 +493,14 @@ export function AdminLoginPage() {
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A11.96 11.96 0 0 0 1 12c0 1.94.46 3.77 1.18 5.09l3.66-2.84v-.16z" fill="#FBBC05" />
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                   </svg>
-                  <span className="tracking-wide text-sm">CONTINUE WITH GOOGLE</span>
+                  <span className="tracking-wide">{emailLoginEnabled ? 'CONTINUE WITH GOOGLE' : 'SIGN IN WITH GOOGLE'}</span>
                 </>
               )}
             </motion.button>
+
+            <p className="text-center text-[11px] text-white/20 font-mono mt-1">
+              AUTHORIZED PERSONNEL ONLY {!emailLoginEnabled && '• GOOGLE SSO ENFORCED'}
+            </p>
           </div>
         )}
 

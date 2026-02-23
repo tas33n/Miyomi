@@ -18,6 +18,7 @@ import { SearchPage } from "./pages/SearchPage";
 import { SubmitPage } from "./pages/SubmitPage";
 import { ChristmasSnow } from './components/ChristmasSnow';
 import { AdminLoginPage } from './pages/admin/AdminLoginPage';
+import { UnauthorizedPage } from './pages/UnauthorizedPage';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { AdminAppsPage } from './pages/admin/AdminAppsPage';
 import { AdminAppFormPage } from './pages/admin/AdminAppFormPage';
@@ -206,6 +207,7 @@ function AppContent() {
           <Route path="/contribute" element={<SubmitPage />} />
 
           {/* Fallback for unknown routes */}
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
@@ -220,7 +222,6 @@ export default function App() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Prevent flash by setting initial theme class before render
     const storedTheme = localStorage.getItem("theme");
     const systemTheme = window.matchMedia(
       "(prefers-color-scheme: dark)",
