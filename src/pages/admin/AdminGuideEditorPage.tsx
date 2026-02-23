@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminRichTextEditor } from '@/components/admin/AdminRichTextEditor';
 import { AdminInput, AdminButton, AdminSelect, AdminTextarea, AdminFormField, Label } from '@/components/admin/AdminFormElements';
-import { ArrowLeft, Save, AlertCircle, ChevronsUpDown, Check, PlusCircle } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle, ChevronsUpDown, Check, PlusCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
 import {
     Command,
@@ -36,6 +36,7 @@ export function AdminGuideEditorPage() {
     const [existingCategories, setExistingCategories] = useState<string[]>([]);
     const [categoryOpen, setCategoryOpen] = useState(false);
     const [categoryInput, setCategoryInput] = useState('');
+    const [tagInput, setTagInput] = useState('');
 
     function generateSlug(text: string): string {
         return text
@@ -339,10 +340,51 @@ export function AdminGuideEditorPage() {
                         </AdminFormField>
 
                         <AdminFormField label="Tags">
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                                {form.tags.map((tag, i) => (
+                                    <span
+                                        key={i}
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-[var(--brand)]/10 text-[var(--brand)] border border-[var(--brand)]/20"
+                                    >
+                                        {tag}
+                                        <button
+                                            type="button"
+                                            onClick={() => setForm(f => ({ ...f, tags: f.tags.filter((_, idx) => idx !== i) }))}
+                                            className="hover:bg-[var(--brand)]/20 rounded-full p-0.5"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
                             <AdminInput
-                                value={form.tags.join(', ')}
-                                onChange={e => setForm(f => ({ ...f, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) }))}
-                                placeholder="tag1, tag2"
+                                value={tagInput}
+                                onChange={e => {
+                                    const val = e.target.value;
+                                    if (val.endsWith(',')) {
+                                        const newTag = val.slice(0, -1).trim();
+                                        if (newTag && !form.tags.includes(newTag)) {
+                                            setForm(f => ({ ...f, tags: [...f.tags, newTag] }));
+                                        }
+                                        setTagInput('');
+                                    } else {
+                                        setTagInput(val);
+                                    }
+                                }}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const newTag = tagInput.trim();
+                                        if (newTag && !form.tags.includes(newTag)) {
+                                            setForm(f => ({ ...f, tags: [...f.tags, newTag] }));
+                                        }
+                                        setTagInput('');
+                                    }
+                                    if (e.key === 'Backspace' && !tagInput && form.tags.length > 0) {
+                                        setForm(f => ({ ...f, tags: f.tags.slice(0, -1) }));
+                                    }
+                                }}
+                                placeholder={form.tags.length ? 'Add more...' : 'Type a tag and press comma or Enter'}
                             />
                         </AdminFormField>
                     </div>

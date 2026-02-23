@@ -33,6 +33,8 @@ interface AdminInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   value?: string | number | readonly string[];
   placeholder?: string;
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
   type?: string;
 }
 
