@@ -114,14 +114,10 @@ Deno.serve(async (req) => {
             );
         }
 
-        // Sanitize user input to prevent HTML injection
         const sanitize = (str: string) => str.replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c] || c));
 
-        // Build location string
         const locationParts = [body.city, body.country].filter(Boolean);
         const locationStr = locationParts.length > 0 ? locationParts.join(", ") : "Unknown";
-
-        // Build device string
         const browserStr = body.browser ? `${body.browser}${body.browser_version ? ` ${body.browser_version}` : ''}` : 'Unknown';
         const osStr = body.os ? `${body.os}${body.os_version ? ` ${body.os_version}` : ''}` : 'Unknown';
 
@@ -140,7 +136,6 @@ Deno.serve(async (req) => {
 ⚠️ <i>Unauthorized user attempted admin access. Session destroyed.</i>
         `.trim();
 
-        // Send to all configured chat IDs in parallel
         const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
 
         const sendPromises = chatIds.map((chatId: string) =>
