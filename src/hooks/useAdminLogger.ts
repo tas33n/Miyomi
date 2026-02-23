@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export function useAdminLogger() {
     const logAction = async (
-        action: 'create' | 'update' | 'delete' | 'approve' | 'reject',
+        action: 'create' | 'update' | 'delete' | 'approve' | 'reject' | 'restore',
         resourceType: 'app' | 'extension' | 'guide' | 'faq' | 'submission',
         resourceId: string | null,
         resourceName: string,

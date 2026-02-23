@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminRichTextEditor } from '@/components/admin/AdminRichTextEditor';
 import { AdminInput, AdminButton, AdminSelect, AdminTextarea, AdminFormField } from '@/components/admin/AdminFormElements';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const emptyGuide = {
@@ -18,6 +18,34 @@ export function AdminGuideEditorPage() {
     const [form, setForm] = useState(emptyGuide);
     const [loading, setLoading] = useState(!!id);
     const [saving, setSaving] = useState(false);
+    const [slugTouched, setSlugTouched] = useState(!!id); // true when editing existing guide
+    const [slugError, setSlugError] = useState('');
+
+    function generateSlug(text: string): string {
+        return text
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/(^-|-$)/g, '');
+    }
+
+    function isValidSlug(slug: string): boolean {
+        return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
+    }
+
+    function validateSlug(slug: string) {
+        if (!slug) {
+            setSlugError('');
+            return;
+        }
+        if (!isValidSlug(slug)) {
+            setSlugError('Slug must only contain lowercase letters, numbers, and hyphens (no spaces or special characters)');
+        } else {
+            setSlugError('');
+        }
+    }
 
     useEffect(() => {
         if (!id) return;
@@ -58,6 +86,17 @@ export function AdminGuideEditorPage() {
             return;
         }
 
+        const finalSlug = form.slug || generateSlug(form.title);
+        if (!finalSlug) {
+            toast.error('Slug is required');
+            return;
+        }
+        if (!isValidSlug(finalSlug)) {
+            toast.error('Please fix the slug before saving — it contains invalid characters');
+            setSlugError('Slug must only contain lowercase letters, numbers, and hyphens');
+            return;
+        }
+
         setSaving(true);
         const payload = {
             title: form.title,
@@ -65,7 +104,7 @@ export function AdminGuideEditorPage() {
             content: form.content || null,
             author: form.author || null,
             category: form.category || null,
-            slug: form.slug || form.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+            slug: finalSlug,
             status: form.status,
             tags: form.tags.length ? form.tags : null,
             content_format: form.content_format,
@@ -119,7 +158,17 @@ export function AdminGuideEditorPage() {
                     <input
                         type="text"
                         value={form.title}
-                        onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                        onChange={e => {
+                            const newTitle = e.target.value;
+                            setForm(f => ({
+                                ...f,
+                                title: newTitle,
+                                ...(slugTouched ? {} : { slug: generateSlug(newTitle) }),
+                            }));
+                            if (!slugTouched) {
+                                setSlugError('');
+                            }
+                        }}
                         placeholder="Guide Title"
                         className="w-full bg-transparent text-3xl font-bold border-none focus:outline-none focus:ring-0 px-0 placeholder-[var(--text-secondary)]"
                         style={{ color: 'var(--text-primary)' }}
@@ -147,7 +196,35 @@ export function AdminGuideEditorPage() {
                         </AdminFormField>
 
                         <AdminFormField label="Slug">
-                            <AdminInput value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} placeholder="url-slug" />
+                            <AdminInput
+                                value={form.slug}
+                                onChange={e => {
+                                    const val = e.target.value;
+                                    setSlugTouched(true);
+                                    setForm(f => ({ ...f, slug: val }));
+                                    validateSlug(val);
+                                }}
+                                onBlur={() => {
+                                    if (form.slug && !isValidSlug(form.slug)) {
+                                        const fixed = generateSlug(form.slug);
+                                        setForm(f => ({ ...f, slug: fixed }));
+                                        setSlugError('');
+                                        toast.info('Slug auto-corrected');
+                                    }
+                                }}
+                                placeholder="url-slug"
+                                className={slugError ? '!border-red-500' : ''}
+                            />
+                            {slugError && (
+                                <div className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" /> {slugError}
+                                </div>
+                            )}
+                            {!form.slug && form.title && (
+                                <div className="text-xs text-[var(--text-secondary)] mt-1">
+                                    Will auto-generate: <span className="font-mono text-[var(--brand)]">{generateSlug(form.title)}</span>
+                                </div>
+                            )}
                         </AdminFormField>
 
                         <AdminFormField label="Category">
