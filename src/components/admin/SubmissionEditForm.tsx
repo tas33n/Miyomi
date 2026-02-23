@@ -132,14 +132,6 @@ export function SubmissionEditForm({ type, data, onChange }: SubmissionEditFormP
                         <AdminInput value={form.name || ''} onChange={e => updateField('name', e.target.value)} />
                     </AdminFormField>
 
-                    <AdminFormField label="Description">
-                        <AdminTextarea
-                            className="h-24"
-                            value={form.description || ''}
-                            onChange={e => updateField('description', e.target.value)}
-                        />
-                    </AdminFormField>
-
                     <div className="grid grid-cols-2 gap-4">
                         <AdminFormField label="Author">
                             <AdminInput value={form.author || ''} onChange={e => updateField('author', e.target.value)} />
@@ -156,16 +148,23 @@ export function SubmissionEditForm({ type, data, onChange }: SubmissionEditFormP
                         )}
                     </div>
 
-                    {type === 'extension' && (
-                        <AdminFormField label="Short Description (Bio)">
-                            <AdminTextarea
-                                className="h-16"
-                                value={form.short_description || ''}
-                                onChange={e => updateField('short_description', e.target.value)}
-                                placeholder="Brief one-line summary..."
-                            />
-                        </AdminFormField>
-                    )}
+                    <AdminFormField label="Short Description (Bio)">
+                        <AdminTextarea
+                            className="h-16"
+                            value={form.short_description || ''}
+                            onChange={e => updateField('short_description', e.target.value)}
+                            placeholder="Brief one-line summary..."
+                        />
+                    </AdminFormField>
+
+                    <AdminFormField label="Long Description">
+                        <AdminTextarea
+                            className="h-24"
+                            value={form.description || ''}
+                            onChange={e => updateField('description', e.target.value)}
+                            placeholder="Detailed description of features..."
+                        />
+                    </AdminFormField>
                 </div>
 
                 <div className="space-y-4">
