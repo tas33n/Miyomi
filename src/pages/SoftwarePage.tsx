@@ -65,7 +65,7 @@ export function SoftwarePage({ onNavigate }: SoftwarePageProps) {
   const sortFields = [
     { id: 'name', label: 'Names', defaultDir: 'asc' },
     { id: 'updated', label: 'Updated', defaultDir: 'desc' },
-    { id: 'downloads', label: 'Popular', defaultDir: 'desc' },
+    { id: 'downloads', label: 'Downloads', defaultDir: 'desc' },
     { id: 'loved', label: 'Loved', defaultDir: 'desc' },
     { id: 'added', label: 'Added', defaultDir: 'desc' },
   ] as const;

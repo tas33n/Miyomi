@@ -75,6 +75,7 @@ export interface ExtensionData {
     rating?: number;
     downloadCount?: number;
     likes?: number;
+    createdAt?: string;
 }
 
 

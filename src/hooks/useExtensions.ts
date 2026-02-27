@@ -29,8 +29,8 @@ export function useExtensions(): { extensions: ExtensionData[]; loading: boolean
             website: ext.website_url,
             keywords: [],
             tutorials: [],
-            rating: 0,
-            downloadCount: 0
+            likes: ext.likes_count || 0,
+            createdAt: ext.created_at || undefined
         }));
     };
 

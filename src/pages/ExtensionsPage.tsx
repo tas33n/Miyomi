@@ -17,7 +17,7 @@ interface ExtensionsPageProps {
   onNavigate?: (path: string) => void;
 }
 
-type SortOption = string;
+type SortOption = 'name-asc' | 'name-desc' | 'updated-desc' | 'updated-asc' | 'loved' | 'added-desc' | 'added-asc';
 
 const apps = ['All', 'Aniyomi', 'Mihon', 'Dantotsu', 'Mangayomi'];
 const types = ['All', 'Anime', 'Manga', 'Light Novel'];
@@ -62,8 +62,8 @@ export function ExtensionsPage({ onNavigate }: ExtensionsPageProps) {
   const sortFields = [
     { id: 'name', label: 'Names', defaultDir: 'asc' },
     { id: 'updated', label: 'Updated', defaultDir: 'desc' },
-    { id: 'rating', label: 'Rating', defaultDir: 'desc' },
     { id: 'loved', label: 'Loved', defaultDir: 'desc' },
+    { id: 'added', label: 'Added', defaultDir: 'desc' },
   ] as const;
 
   const handleSortChange = (fieldId: string) => {
@@ -180,17 +180,20 @@ export function ExtensionsPage({ onNavigate }: ExtensionsPageProps) {
           return dir === 1 ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
         case 'updated':
           return dir * ((a.lastUpdated || '').localeCompare(b.lastUpdated || ''));
-        case 'rating':
-          return dir * ((a.rating || 0) - (b.rating || 0));
-        case 'loved':
-          return dir * ((voteRegistry[a.id]?.count || 0) - (voteRegistry[b.id]?.count || 0));
+        case 'loved': {
+          const aLoved = Math.max(a.likes || 0, voteRegistry[a.id]?.count || 0);
+          const bLoved = Math.max(b.likes || 0, voteRegistry[b.id]?.count || 0);
+          return dir * (aLoved - bLoved);
+        }
+        case 'added':
+          return dir * ((a.createdAt || '').localeCompare(b.createdAt || ''));
         default:
           return 0;
       }
     });
 
     return filtered;
-  }, [unifiedExtensions, selectedApp, selectedType, searchQuery, sortBy]);
+  }, [unifiedExtensions, selectedApp, selectedType, searchQuery, sortBy, voteRegistry]);
 
 
   useEffect(() => {
