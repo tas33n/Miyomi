@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { LoveButton } from './LoveButton';
 
 interface ExtensionGridCardProps {
+  key?: string | number;
   extension: ExtensionData;
   voteData?: { count: number; loved: boolean };
   allowFetch?: boolean;
