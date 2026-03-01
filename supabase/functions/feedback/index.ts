@@ -16,7 +16,6 @@ function getCorsHeaders(req: Request) {
     };
 }
 
-// Simple in-memory rate limiter
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_MAX = 10; // max 10 feedback per IP per hour
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
@@ -48,7 +47,6 @@ interface FeedbackRequest {
 Deno.serve(async (req) => {
     const corsHeaders = getCorsHeaders(req);
 
-    // Handle CORS preflight
     if (req.method === "OPTIONS") {
         return new Response(null, { headers: corsHeaders });
     }
@@ -61,7 +59,6 @@ Deno.serve(async (req) => {
     }
 
     try {
-        // Rate limiting by IP
         const clientIp = req.headers.get("cf-connecting-ip") ||
             req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
             "unknown";
@@ -79,7 +76,6 @@ Deno.serve(async (req) => {
 
         const body: FeedbackRequest = await req.json();
 
-        // Validate request
         if (!body.message || !body.type) {
             return new Response(
                 JSON.stringify({ error: "Missing required fields" }),
@@ -87,7 +83,6 @@ Deno.serve(async (req) => {
             );
         }
 
-        // Validate type is one of the allowed values
         const allowedTypes = ["submit", "update", "report", "suggest", "love", "other"];
         if (!allowedTypes.includes(body.type)) {
             return new Response(
@@ -96,7 +91,6 @@ Deno.serve(async (req) => {
             );
         }
 
-        // Validate message length
         if (body.message.length > 2000) {
             return new Response(
                 JSON.stringify({ error: "Message too long (max 2000 characters)" }),
@@ -104,7 +98,6 @@ Deno.serve(async (req) => {
             );
         }
 
-        // Fetch Telegram settings from database
         const { data: botTokenSetting } = await supabase
             .from("settings")
             .select("value")
@@ -117,7 +110,6 @@ Deno.serve(async (req) => {
             .eq("key", "telegram_chat_ids")
             .single();
 
-        // Extract values with fallback to env vars
         let botToken = Deno.env.get("TELEGRAM_BOT_TOKEN") || "";
         let chatIds: string[] = [];
 
@@ -128,14 +120,12 @@ Deno.serve(async (req) => {
         if (chatIdsSetting?.value && Array.isArray(chatIdsSetting.value) && chatIdsSetting.value.length > 0) {
             chatIds = chatIdsSetting.value;
         } else {
-            // Fallback to env var if available
             const envChatId = Deno.env.get("TELEGRAM_CHAT_ID");
             if (envChatId) {
                 chatIds = [envChatId];
             }
         }
 
-        // Check if Telegram is properly configured
         if (!botToken || chatIds.length === 0) {
             console.error("Telegram not configured: token or chat IDs missing");
             return new Response(
@@ -144,7 +134,6 @@ Deno.serve(async (req) => {
             );
         }
 
-        // Format message with emoji
         const emojiMap: Record<string, string> = {
             submit: "➕",
             update: "❗",
@@ -157,7 +146,6 @@ Deno.serve(async (req) => {
         const emoji = emojiMap[body.type] || "💬";
         const typeLabel = body.type.charAt(0).toUpperCase() + body.type.slice(1);
 
-        // Sanitize user input to prevent HTML injection in Telegram message
         const sanitize = (str: string) => str.replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c] || c));
 
         const telegramMessage = `
@@ -171,7 +159,6 @@ ${emoji} <b>New Feedback - Miyomi</b>
 ${sanitize(body.message)}
     `.trim();
 
-        // Send to all configured chat IDs in parallel
         const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
 
         const sendPromises = chatIds.map((chatId: string) =>
@@ -188,7 +175,6 @@ ${sanitize(body.message)}
 
         const results = await Promise.allSettled(sendPromises);
 
-        // Check if all sends failed
         const allFailed = results.every((r) => r.status === "rejected");
         if (allFailed) {
             console.error("All Telegram sends failed");
@@ -198,7 +184,6 @@ ${sanitize(body.message)}
             );
         }
 
-        // Return success even if some sends failed
         return new Response(
             JSON.stringify({ success: true, message: "Feedback received" }),
             { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
