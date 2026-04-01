@@ -120,12 +120,17 @@ export function AdminSubmissionsPage() {
           payload.fork_of = data.fork_of;
           payload.upstream_url = data.upstream_url;
         } else {
+          const installUrls = data.install_urls || [];
+          const firstAuto = installUrls.find((u: any) => u.type === 'auto');
+          const firstCopy = installUrls.find((u: any) => u.type === 'copy');
+
           payload.compatible_with = data.compatible_with || [];
           payload.types = data.types || data.content_types || [];
           payload.source_url = data.source_url;
           payload.language = data.language;
-          payload.auto_url = data.auto_url || null;
-          payload.manual_url = data.manual_url || null;
+          payload.auto_url = firstAuto?.url || data.auto_url || null;
+          payload.manual_url = firstCopy?.url || data.manual_url || null;
+          payload.metadata = installUrls.length > 0 ? { install_urls: installUrls } : null;
           payload.tutorials = data.tutorials || [];
         }
 

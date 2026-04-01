@@ -40,13 +40,24 @@ export function useExtension(extensionId: string): { extension: ExtensionData | 
                         accentColor: data.accent_color || data.icon_color,
                         autoUrl: data.auto_url || '',
                         manualUrl: data.manual_url || '',
-                        supportedApps: data.compatible_with || [],
+                        supportedApps: (data.compatible_with || []).map((app: string) => app.toLowerCase()),
                         lastUpdated: data.updated_at || data.created_at,
                         overview: data.description || data.info, // Map description to overview
                         github: data.repo_url,
                         website: data.website_url,
                         keywords: data.tags || [],
                         tutorials: Array.isArray(data.tutorials) ? data.tutorials : [],
+                        installUrls: (() => {
+                            const meta = data.metadata as any;
+                            if (meta?.install_urls && Array.isArray(meta.install_urls) && meta.install_urls.length > 0) {
+                                return meta.install_urls;
+                            }
+                            // Fallback: construct from legacy fields
+                            const legacy: any[] = [];
+                            if (data.auto_url) legacy.push({ label: 'Auto Install', url: data.auto_url, type: 'auto' });
+                            if (data.manual_url) legacy.push({ label: 'Copy URL', url: data.manual_url, type: 'copy' });
+                            return legacy;
+                        })(),
                         socialUrls: (Array.isArray(data.social_urls) && data.social_urls.length > 0)
                             ? data.social_urls.filter((u: string) => u)
                             : (data.discord_url ? [data.discord_url] : []),

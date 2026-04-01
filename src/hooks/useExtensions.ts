@@ -22,6 +22,16 @@ export function useExtensions(): { extensions: ExtensionData[]; loading: boolean
             accentColor: ext.accent_color,
             autoUrl: ext.auto_url,
             manualUrl: ext.manual_url,
+            installUrls: (() => {
+                const meta = ext.metadata as any;
+                if (meta?.install_urls && Array.isArray(meta.install_urls) && meta.install_urls.length > 0) {
+                    return meta.install_urls;
+                }
+                const legacy: any[] = [];
+                if (ext.auto_url) legacy.push({ label: 'Auto Install', url: ext.auto_url, type: 'auto' });
+                if (ext.manual_url) legacy.push({ label: 'Copy URL', url: ext.manual_url, type: 'copy' });
+                return legacy;
+            })(),
             supportedApps: (ext.compatible_with || []).map((app: string) => app.toLowerCase()),
             lastUpdated: ext.last_updated || ext.updated_at,
             overview: ext.info,

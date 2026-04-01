@@ -5,6 +5,7 @@ import { AdminSmartSelect } from '@/components/admin/AdminSmartSelect';
 import { extractColorFromImage } from '@/utils/extractColorFromImage';
 import { toast } from 'sonner';
 import { SocialUrlsInput } from '@/components/admin/SocialUrlsInput';
+import { InstallUrlsInput, type InstallUrlEntry } from '@/components/admin/InstallUrlsInput';
 
 const PLATFORM_OPTIONS = ['Android', 'iOS', 'Windows', 'macOS', 'Linux', 'Web'];
 const CONTENT_TYPE_OPTIONS = ['Anime', 'Manga', 'Light Novel', 'Webtoon', 'Comics'];
@@ -26,10 +27,16 @@ export function SubmissionEditForm({ type, data, onChange }: SubmissionEditFormP
     const [appOptions, setAppOptions] = useState<string[]>([]);
 
     useEffect(() => {
-        setForm(data);
+        const initData = { ...data };
+        if (!initData.install_urls || !Array.isArray(initData.install_urls) || initData.install_urls.length === 0) {
+            const legacy: InstallUrlEntry[] = [];
+            if (initData.auto_url) legacy.push({ label: 'Auto Install', url: initData.auto_url, type: 'auto' });
+            if (initData.manual_url) legacy.push({ label: 'Copy URL', url: initData.manual_url, type: 'copy' });
+            initData.install_urls = legacy;
+        }
+        setForm(initData);
     }, [data.id]);
 
-    // Fetch app options for compatible_with
     useEffect(() => {
         async function fetchApps() {
             const { data: apps } = await (await import('@/integrations/supabase/client')).supabase.from('apps').select('name').order('name');
@@ -261,31 +268,18 @@ export function SubmissionEditForm({ type, data, onChange }: SubmissionEditFormP
                     <h4 className="text-sm font-semibold flex items-center gap-2 text-[var(--text-secondary)]">
                         <Link2 className="w-4 h-4" /> Install URLs
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <AdminFormField label="Auto Install URL">
-                            <AdminInput value={form.auto_url || ''} onChange={e => updateField('auto_url', e.target.value)} placeholder="tachiyomi://add-repo?url=..." className="text-xs" />
-                        </AdminFormField>
-                        <AdminFormField label="Manual Install URL">
-                            <div className="flex gap-2">
-                                <AdminInput value={form.manual_url || ''} onChange={e => updateField('manual_url', e.target.value)} placeholder="https://raw.githubusercontent.com/..." className="text-xs flex-1" />
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (form.manual_url) {
-                                            navigator.clipboard.writeText(form.manual_url);
-                                            setCopiedManual(true);
-                                            toast.success('URL copied!');
-                                            setTimeout(() => setCopiedManual(false), 2000);
-                                        }
-                                    }}
-                                    disabled={!form.manual_url}
-                                    className="px-2 rounded-lg border border-[var(--divider)] hover:bg-[var(--bg-elev-1)] disabled:opacity-50 transition-colors"
-                                >
-                                    {copiedManual ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-                                </button>
-                            </div>
-                        </AdminFormField>
-                    </div>
+                    <InstallUrlsInput
+                        value={form.install_urls || []}
+                        onChange={urls => {
+                            updateField('install_urls', urls);
+                            // Sync legacy fields
+                            const firstAuto = urls.find((u: InstallUrlEntry) => u.type === 'auto');
+                            const firstCopy = urls.find((u: InstallUrlEntry) => u.type === 'copy');
+                            updateField('auto_url', firstAuto?.url || '');
+                            updateField('manual_url', firstCopy?.url || '');
+                        }}
+                        compact
+                    />
                     <AdminFormField label="Additional Info">
                         <AdminTextarea className="h-16" value={form.info || ''} onChange={e => updateField('info', e.target.value)} placeholder="Installation notes, requirements..." />
                     </AdminFormField>

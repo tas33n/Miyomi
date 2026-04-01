@@ -97,10 +97,17 @@ export function ExtensionDetailPage({ extensionId, onNavigate }: ExtensionDetail
 
   const renderActionButtons = (layout: 'inline' | 'stack') => {
     if (!extension) return null;
-    const hasValidAutoUrl = extension.autoUrl && extension.autoUrl.trim() !== '';
-    const hasValidManualUrl = extension.manualUrl && extension.manualUrl.trim() !== '';
 
-    if (!hasValidAutoUrl && !hasValidManualUrl) {
+    const installUrls = (extension.installUrls && extension.installUrls.length > 0)
+      ? extension.installUrls
+      : [
+        ...(extension.autoUrl ? [{ label: 'Auto Install', url: extension.autoUrl, type: 'auto' as const }] : []),
+        ...(extension.manualUrl ? [{ label: 'Copy URL', url: extension.manualUrl, type: 'copy' as const }] : []),
+      ];
+
+    const validUrls = installUrls.filter(u => u.url && u.url.trim() !== '');
+
+    if (validUrls.length === 0) {
       return null;
     }
 
@@ -114,45 +121,51 @@ export function ExtensionDetailPage({ extensionId, onNavigate }: ExtensionDetail
       return `${baseButtonClass} ${palette}`;
     };
 
-    const installButton = (widthClass: string) => (
-      <button
-        onClick={() => window.open(extension.autoUrl, '_blank')}
-        className={`${widthClass} ${buildButtonClass('primary')}`}
-        style={{ fontWeight: 600 }}
-      >
-        <Download className="w-4 h-4 sm:w-5 sm:h-5" />
-        <span className="text-sm sm:text-lg">Auto Install</span>
-      </button>
-    );
+    const renderButton = (entry: typeof validUrls[0], widthClass: string, index: number) => {
+      const isAuto = entry.type === 'auto';
+      const variant = index === 0 ? 'primary' : 'secondary';
 
-    const copyButton = (widthClass: string) => (
-      <button
-        onClick={() => copyToClipboard(extension.manualUrl, 'Source URL copied to clipboard!')}
-        className={`${widthClass} ${buildButtonClass('secondary')}`}
-        style={{ fontWeight: 600 }}
-      >
-        <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
-        <span className="text-sm sm:text-lg">Copy URL</span>
-      </button>
-    );
+      if (isAuto) {
+        return (
+          <button
+            key={index}
+            onClick={() => window.open(entry.url, '_blank')}
+            className={`${widthClass} ${buildButtonClass(variant)}`}
+            style={{ fontWeight: 600 }}
+          >
+            <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-sm sm:text-lg">{entry.label || 'Auto Install'}</span>
+          </button>
+        );
+      }
+
+      return (
+        <button
+          key={index}
+          onClick={() => copyToClipboard(entry.url, `${entry.label || 'URL'} copied to clipboard!`)}
+          className={`${widthClass} ${buildButtonClass(variant)}`}
+          style={{ fontWeight: 600 }}
+        >
+          <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="text-sm sm:text-lg">{entry.label || 'Copy URL'}</span>
+        </button>
+      );
+    };
 
     if (layout === 'inline') {
-      const hasOnlyOneButton = (hasValidAutoUrl && !hasValidManualUrl) || (!hasValidAutoUrl && hasValidManualUrl);
+      const hasOnlyOneButton = validUrls.length === 1;
       const buttonContainerClass = hasOnlyOneButton
         ? 'flex gap-3 justify-center'
-        : 'flex gap-3';
+        : 'flex flex-wrap gap-3';
       const buttonWidthClass = hasOnlyOneButton
         ? 'max-w-[280px] w-full'
-        : 'flex-1';
+        : 'flex-1 min-w-[140px]';
 
       return (
         <div className="flex flex-col gap-3">
-          {(hasValidAutoUrl || hasValidManualUrl) && (
-            <div className={buttonContainerClass}>
-              {hasValidAutoUrl && installButton(buttonWidthClass)}
-              {hasValidManualUrl && copyButton(buttonWidthClass)}
-            </div>
-          )}
+          <div className={buttonContainerClass}>
+            {validUrls.map((entry, i) => renderButton(entry, buttonWidthClass, i))}
+          </div>
 
           <div className="flex items-center justify-center gap-3">
             {extension.github && (
@@ -201,8 +214,7 @@ export function ExtensionDetailPage({ extensionId, onNavigate }: ExtensionDetail
 
     return (
       <div className="flex w-full flex-col gap-3">
-        {hasValidAutoUrl && installButton('w-full')}
-        {hasValidManualUrl && copyButton('w-full')}
+        {validUrls.map((entry, i) => renderButton(entry, 'w-full', i))}
       </div>
     );
   };

@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import Turnstile from 'react-turnstile';
 import { Navbar } from '@/components/Navbar';
 import { SocialUrlsInput } from '@/components/admin/SocialUrlsInput';
+import { InstallUrlsInput, type InstallUrlEntry } from '@/components/admin/InstallUrlsInput';
 
 
 const PLATFORM_OPTIONS = ['Android', 'iOS', 'Windows', 'macOS', 'Linux', 'Web'];
@@ -64,8 +65,7 @@ export function SubmitPage() {
     source_url: '',
     discord_url: '',
     social_urls: [''] as string[],
-    auto_url: '',
-    manual_url: '',
+    install_urls: [] as InstallUrlEntry[],
     icon_url: '',
     icon_color: '',
     platforms: [] as string[],
@@ -86,7 +86,6 @@ export function SubmitPage() {
 
 
   const [nameError, setNameError] = useState<{ message: string; url?: string } | null>(null);
-  const [repoError, setRepoError] = useState<{ message: string; url?: string } | null>(null);
 
 
 
@@ -94,9 +93,8 @@ export function SubmitPage() {
     const checkDuplicates = async () => {
 
       if (!form.name) setNameError(null);
-      if (!form.repo_url) setRepoError(null);
 
-      if (!form.name && !form.repo_url) return;
+      if (!form.name) return;
 
       const timeoutId = setTimeout(async () => {
         try {
@@ -131,37 +129,6 @@ export function SubmitPage() {
             }
           }
 
-
-          if (form.repo_url) {
-            const { data: appRepo } = await supabase
-              .from('apps')
-              .select('name, repo_url')
-              .ilike('repo_url', form.repo_url)
-              .maybeSingle();
-
-            if (appRepo) {
-              setRepoError({
-                message: `Repository already linked to "${appRepo.name}".`,
-                url: `/software/${appRepo.name.toLowerCase().replace(/\s+/g, '-')}`
-              });
-            } else {
-              const { data: extRepo } = await supabase
-                .from('extensions')
-                .select('name, repo_url')
-                .ilike('repo_url', form.repo_url)
-                .maybeSingle();
-
-              if (extRepo) {
-                setRepoError({
-                  message: `Repository already linked to "${extRepo.name}".`,
-                  url: `/extensions/${extRepo.name.toLowerCase().replace(/\s+/g, '-')}`
-                });
-              } else {
-                setRepoError(null);
-              }
-            }
-          }
-
         } catch (err) {
           console.error("Duplicate check failed", err);
         }
@@ -171,7 +138,7 @@ export function SubmitPage() {
     };
 
     checkDuplicates();
-  }, [form.name, form.repo_url]);
+  }, [form.name]);
 
   useEffect(() => {
     async function fetchApps() {
@@ -265,7 +232,7 @@ export function SubmitPage() {
       return toast.error("Please complete the CAPTCHA");
     }
 
-    if (nameError || repoError) {
+    if (nameError) {
       return toast.error("Please resolve duplicate warnings before submitting.");
     }
 
@@ -294,8 +261,9 @@ export function SubmitPage() {
           compatible_with: form.compatible_with,
           source_url: form.source_url,
           language: form.language,
-          auto_url: form.auto_url,
-          manual_url: form.manual_url,
+          install_urls: form.install_urls.filter(u => u.url.trim()),
+          auto_url: form.install_urls.find(u => u.type === 'auto')?.url || '',
+          manual_url: form.install_urls.find(u => u.type === 'copy')?.url || '',
         })
       };
 
@@ -450,19 +418,8 @@ export function SubmitPage() {
                   placeholder="https://github.com/owner/repo"
                   value={form.repo_url}
                   onChange={e => setForm(f => ({ ...f, repo_url: e.target.value }))}
-                  className={repoError ? "!border-red-500" : ""}
                 />
-                {repoError && (
-                  <div className="text-xs text-red-500 mt-1.5 flex items-center gap-1.5">
-                    <AlertCircle className="w-3 h-3" />
-                    <span>{repoError.message}</span>
-                    {repoError.url && (
-                      <a href={repoError.url} target="_blank" rel="noreferrer" className="underline font-medium hover:text-red-400">
-                        View
-                      </a>
-                    )}
-                  </div>
-                )}
+                <p className="text-xs text-[var(--text-secondary)] mt-1">Same repo can be used for multiple extensions targeting different apps.</p>
               </AdminFormField>
               <AdminButton onClick={handleGithubFetch} disabled={fetchingGithub || !form.repo_url} variant="secondary">
                 {fetchingGithub ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
@@ -573,41 +530,16 @@ export function SubmitPage() {
 
           {type === 'extension' && (
             <div className="p-6 rounded-2xl border border-[var(--divider)] bg-[var(--bg-surface)] space-y-4">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2 mb-4">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2 mb-2">
                 <Link2 className="w-5 h-5" /> Install URLs
               </h3>
-              <AdminFormField label="Auto Install URL">
-                <AdminInput
-                  value={form.auto_url} onChange={e => setForm(f => ({ ...f, auto_url: e.target.value }))}
-                  placeholder="tachiyomi://add-repo?url=..."
-                />
-                <p className="text-xs text-[var(--text-secondary)] mt-1">Deep link that triggers automatic extension source installation.</p>
-              </AdminFormField>
-              <AdminFormField label="Manual Install URL">
-                <div className="flex gap-2">
-                  <AdminInput
-                    value={form.manual_url} onChange={e => setForm(f => ({ ...f, manual_url: e.target.value }))}
-                    placeholder="https://raw.githubusercontent.com/..."
-                    className="flex-1"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (form.manual_url) {
-                        navigator.clipboard.writeText(form.manual_url);
-                        setCopiedManual(true);
-                        toast.success('Copied!');
-                        setTimeout(() => setCopiedManual(false), 2000);
-                      }
-                    }}
-                    disabled={!form.manual_url}
-                    className="px-3 rounded-lg border border-[var(--divider)] hover:bg-[var(--bg-elev-1)] disabled:opacity-50 transition-colors"
-                  >
-                    {copiedManual ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
-                <p className="text-xs text-[var(--text-secondary)] mt-1">URL users can copy to manually add the extension source.</p>
-              </AdminFormField>
+              <p className="text-xs text-[var(--text-secondary)] -mt-1 mb-3">
+                Add install buttons for each compatible app. "Auto" opens a deep link, "Copy" lets users copy the URL.
+              </p>
+              <InstallUrlsInput
+                value={form.install_urls}
+                onChange={urls => setForm(f => ({ ...f, install_urls: urls }))}
+              />
 
               <AdminSmartSelect
                 label="Compatible Apps"

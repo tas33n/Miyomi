@@ -8,6 +8,7 @@ import { ArrowLeft, Save, Loader2, Palette, Github, Download, Copy, Check, Link2
 import { toast } from 'sonner';
 import { extractColorFromImage } from '@/utils/extractColorFromImage';
 import { SocialUrlsInput } from '@/components/admin/SocialUrlsInput';
+import { InstallUrlsInput, type InstallUrlEntry } from '@/components/admin/InstallUrlsInput';
 
 function slugify(text: string): string {
     return text
@@ -26,6 +27,7 @@ const emptyExt = {
     compatible_with: [] as string[], repo_url: '', source_url: '',
     icon_url: '', icon_color: '',
     auto_url: '', manual_url: '', social_urls: [] as string[],
+    install_urls: [] as InstallUrlEntry[],
     tutorials: [] as any[],
     download_count: 0, likes_count: 0
 };
@@ -164,18 +166,7 @@ export function AdminExtensionFormPage() {
         return () => clearTimeout(timer);
     }, [form.name]);
 
-    useEffect(() => {
-        const timer = setTimeout(async () => {
-            if (form.repo_url.trim()) {
-                const dup = await checkDuplicate('repo_url', form.repo_url);
-                setErrors(prev => ({
-                    ...prev,
-                    repo_url: dup ? `An extension with this Repository URL already exists (${dup.name}).` : ''
-                }));
-            }
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [form.repo_url]);
+    // repo_url duplicate check removed — same repo can serve multiple apps
 
     useEffect(() => {
         const timer = setTimeout(async () => {
@@ -232,6 +223,16 @@ export function AdminExtensionFormPage() {
             if (data) {
                 const extData = data as any;
                 const loadedTutorials = Array.isArray(extData.tutorials) ? extData.tutorials : [];
+                // Migrate install_urls from metadata or legacy fields
+                const meta = extData.metadata as any;
+                let loadedInstallUrls: InstallUrlEntry[] = [];
+                if (meta?.install_urls && Array.isArray(meta.install_urls) && meta.install_urls.length > 0) {
+                    loadedInstallUrls = meta.install_urls;
+                } else {
+                    if (extData.auto_url) loadedInstallUrls.push({ label: 'Auto Install', url: extData.auto_url, type: 'auto' });
+                    if (extData.manual_url) loadedInstallUrls.push({ label: 'Copy URL', url: extData.manual_url, type: 'copy' });
+                }
+
                 setForm({
                     name: extData.name,
                     slug: extData.slug || '',
@@ -251,6 +252,7 @@ export function AdminExtensionFormPage() {
                     icon_color: extData.icon_color || '',
                     auto_url: extData.auto_url || '',
                     manual_url: extData.manual_url || '',
+                    install_urls: loadedInstallUrls,
                     social_urls: (Array.isArray(extData.social_urls) && extData.social_urls.length > 0)
                         ? extData.social_urls.filter((u: string) => u)
                         : (extData.discord_url ? [extData.discord_url] : []),
@@ -304,6 +306,11 @@ export function AdminExtensionFormPage() {
                 return { title: title, url: '#', type: 'custom' };
             });
 
+            // Sync legacy fields from install_urls for backward compat
+            const validInstallUrls = form.install_urls.filter((u: InstallUrlEntry) => u.url.trim());
+            const firstAuto = validInstallUrls.find((u: InstallUrlEntry) => u.type === 'auto');
+            const firstCopy = validInstallUrls.find((u: InstallUrlEntry) => u.type === 'copy');
+
             const payload = {
                 name: form.name,
                 slug: form.slug || slugify(form.name) || null,
@@ -322,8 +329,9 @@ export function AdminExtensionFormPage() {
                 source_url: form.source_url || null,
                 icon_url: form.icon_url || null,
                 icon_color: form.icon_color || null,
-                auto_url: form.auto_url || null,
-                manual_url: form.manual_url || null,
+                auto_url: firstAuto?.url || null,
+                manual_url: firstCopy?.url || null,
+                metadata: { install_urls: validInstallUrls },
                 social_urls: form.social_urls.filter(u => u.trim()) || [],
                 discord_url: form.social_urls.filter(u => u.trim())[0] || null,
                 tutorials: finalTutorials,
@@ -397,16 +405,12 @@ export function AdminExtensionFormPage() {
                         </h3>
                         <div className="flex gap-3 items-end">
                             <AdminFormField label="Repository URL" className="flex-1">
-                                {errors.repo_url && <div className="text-red-500 text-xs font-semibold mb-1 animate-pulse">⚠️ {errors.repo_url}</div>}
                                 <AdminInput
                                     value={form.repo_url}
-                                    onChange={e => {
-                                        setForm(f => ({ ...f, repo_url: e.target.value }));
-                                        if (errors.repo_url) setErrors(prev => ({ ...prev, repo_url: '' }));
-                                    }}
+                                    onChange={e => setForm(f => ({ ...f, repo_url: e.target.value }))}
                                     placeholder="https://github.com/owner/repo"
-                                    className={errors.repo_url ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.5)]' : ''}
                                 />
+                                <p className="text-xs text-[var(--text-secondary)] mt-1">Same repo URL can be used for multiple extensions (e.g. different apps from the same source).</p>
                             </AdminFormField>
                             <AdminButton onClick={handleGithubFetch} disabled={fetchingGithub || !form.repo_url} variant="secondary">
                                 {fetchingGithub ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
@@ -495,20 +499,16 @@ export function AdminExtensionFormPage() {
                     </div>
 
                     <div className="p-6 rounded-2xl border border-[var(--divider)] bg-[var(--bg-surface)] space-y-4">
-                        <h3 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2 mb-4">
+                        <h3 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2 mb-2">
                             <Link2 className="w-5 h-5" /> Install URLs
                         </h3>
-                        <AdminFormField label="Auto Install URL">
-                            <AdminInput value={form.auto_url} onChange={e => setForm(f => ({ ...f, auto_url: e.target.value }))} placeholder="tachiyomi://add-repo?url=..." />
-                            <p className="text-xs text-[var(--text-secondary)] mt-1">Deep link that triggers automatic extension source installation in compatible apps.</p>
-                        </AdminFormField>
-                        <AdminFormField label="Manual Install URL">
-                            <div className="flex gap-2">
-                                <AdminInput value={form.manual_url} onChange={e => setForm(f => ({ ...f, manual_url: e.target.value }))} placeholder="https://raw.githubusercontent.com/..." className="flex-1" />
-                                <ManualUrlCopyButton url={form.manual_url} />
-                            </div>
-                            <p className="text-xs text-[var(--text-secondary)] mt-1">URL users can copy to manually add the extension source in their app settings.</p>
-                        </AdminFormField>
+                        <p className="text-xs text-[var(--text-secondary)] -mt-1 mb-3">
+                            Add custom install buttons for each compatible app. Use "Auto" for deep links that open the app, or "Copy" for URLs users can copy.
+                        </p>
+                        <InstallUrlsInput
+                            value={form.install_urls}
+                            onChange={urls => setForm(f => ({ ...f, install_urls: urls }))}
+                        />
                     </div>
 
                     {/* Tutorials / Guides Section */}

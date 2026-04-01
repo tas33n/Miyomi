@@ -54,6 +54,12 @@ export interface ExtensionTutorial {
     manualUrl?: string;
 }
 
+export interface InstallUrl {
+    label: string;
+    url: string;
+    type: 'auto' | 'copy';
+}
+
 export interface ExtensionData {
     id: string;
     slug?: string;
@@ -66,6 +72,7 @@ export interface ExtensionData {
     accentColor?: string;
     autoUrl: string;
     manualUrl: string;
+    installUrls?: InstallUrl[];
     supportedApps: readonly string[];
     lastUpdated?: string;
     overview?: string;
