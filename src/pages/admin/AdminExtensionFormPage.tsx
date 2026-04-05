@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { extractColorFromImage } from '@/utils/extractColorFromImage';
 import { SocialUrlsInput } from '@/components/admin/SocialUrlsInput';
 import { InstallUrlsInput, type InstallUrlEntry } from '@/components/admin/InstallUrlsInput';
+import { FlagDisplay } from '@/components/FlagDisplay';
 
 function slugify(text: string): string {
     return text
@@ -35,6 +36,7 @@ const emptyExt = {
 const PLATFORM_OPTIONS = ['Android', 'iOS', 'Windows', 'macOS', 'Linux', 'Web'];
 const TYPE_OPTIONS = ['Anime', 'Manga', 'Light Novel'];
 const TAG_OPTIONS = ['NSFW', 'SFW', 'Official', 'Fan Source'];
+const LANGUAGE_OPTIONS = ['all', 'en', 'es', 'fr', 'pt', 'pt-BR', 'ja', 'zh', 'ar', 'de', 'it', 'ru', 'tr', 'vi', 'id'];
 
 function ManualUrlCopyButton({ url }: { url: string }) {
     const [copied, setCopied] = useState(false);
@@ -462,9 +464,20 @@ export function AdminExtensionFormPage() {
                                 options={TYPE_OPTIONS}
                                 placeholder="Anime, Manga..."
                             />
-                            <AdminFormField label="Language">
-                                <AdminInput value={form.language} onChange={e => setForm(f => ({ ...f, language: e.target.value }))} placeholder="en, es, etc." />
-                            </AdminFormField>
+                            <AdminSmartSelect
+                                label="Language"
+                                value={form.language ? form.language.split(',').map(s => s.trim()).filter(Boolean) : []}
+                                onChange={(val) => setForm(f => ({ ...f, language: val.join(', ') }))}
+                                options={LANGUAGE_OPTIONS}
+                                placeholder="Select languages..."
+                                creatable={true}
+                                renderOption={(option) => (
+                                    <>
+                                        <FlagDisplay region={option === 'all' ? 'global' : option} size="small" />
+                                        <span>{option}</span>
+                                    </>
+                                )}
+                            />
                         </div>
                     </div>
 

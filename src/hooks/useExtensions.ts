@@ -19,6 +19,7 @@ export function useExtensions(): { extensions: ExtensionData[]; loading: boolean
             logoUrl: ext.icon_url,
             types: ext.types || [],
             region: ext.region || 'Global',
+            language: ext.language || '',
             accentColor: ext.accent_color,
             autoUrl: ext.auto_url,
             manualUrl: ext.manual_url,

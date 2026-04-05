@@ -68,7 +68,7 @@ export interface ExtensionData {
     shortDescription?: string;
     logoUrl?: string;
     types: readonly ContentType[];
-    region: string;
+    language: string;
     accentColor?: string;
     autoUrl: string;
     manualUrl: string;

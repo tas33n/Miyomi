@@ -24,6 +24,7 @@ interface AdminSmartSelectProps {
     options: string[];
     placeholder?: string;
     creatable?: boolean;
+    renderOption?: (option: string) => React.ReactNode;
 }
 
 export function AdminSmartSelect({
@@ -33,6 +34,7 @@ export function AdminSmartSelect({
     options = [],
     placeholder = "Select...",
     creatable = true,
+    renderOption,
 }: AdminSmartSelectProps) {
     const [open, setOpen] = React.useState(false);
     const [inputValue, setInputValue] = React.useState("");
@@ -72,8 +74,8 @@ export function AdminSmartSelect({
 
             <div className="flex flex-wrap gap-2 mb-2">
                 {value.map((item) => (
-                    <Badge key={item} variant="secondary" className="pl-2 pr-1 py-1 flex items-center gap-1 transition-all hover:bg-[var(--bg-elev-2)]">
-                        {item}
+                    <Badge key={item} variant="secondary" className="pl-2 pr-1 py-1 flex items-center gap-1.5 transition-all hover:bg-[var(--bg-elev-2)]">
+                        {renderOption ? renderOption(item) : item}
                         <button
                             type="button"
                             onClick={() => handleRemove(item)}
@@ -134,7 +136,9 @@ export function AdminSmartSelect({
                                         }}
                                         className="flex justify-between"
                                     >
-                                        {option}
+                                        <div className="flex items-center gap-2">
+                                            {renderOption ? renderOption(option) : option}
+                                        </div>
                                         {value.includes(option) && <Check className="h-4 w-4 opacity-50" />}
                                     </CommandItem>
                                 ))}

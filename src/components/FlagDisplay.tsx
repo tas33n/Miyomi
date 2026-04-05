@@ -9,17 +9,38 @@ interface FlagDisplayProps {
 }
 
 export function FlagDisplay({ region, size = 'medium', className = '' }: FlagDisplayProps) {
-  // Parse region string to extract country codes
+  // Map language codes to country codes for flag-icons
+  const languageToCountry: Record<string, string> = {
+    'en': 'gb',
+    'zh': 'cn',
+    'ja': 'jp',
+    'ko': 'kr',
+    'ar': 'sa',
+    'vi': 'vn',
+    'id': 'id',
+    'es': 'es',
+    'pt': 'pt',
+    'pt-br': 'br',
+    'fr': 'fr',
+    'de': 'de',
+    'it': 'it',
+    'ru': 'ru',
+    'tr': 'tr'
+  };
+
   const parseRegion = (regionStr: string): string[] => {
     if (!regionStr) return [];
     
     // Handle special case for "ALL" or global
-    if (regionStr.toUpperCase() === 'ALL') {
+    if (regionStr.toLowerCase() === 'all' || regionStr.toLowerCase() === 'global') {
       return ['all']; // Return lowercase for consistency
     }
     
-    // Split by comma for multiple countries (e.g., "BR,TR")
-    return regionStr.split(',').map(code => code.trim().toLowerCase());
+    // Split by comma for multiple countries (e.g., "pt-BR,tr") -> map to country codes
+    return regionStr.split(',').map(code => {
+      const trimmed = code.trim().toLowerCase();
+      return languageToCountry[trimmed] || trimmed;
+    });
   };
 
   const countryCodes = parseRegion(region);

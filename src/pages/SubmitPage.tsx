@@ -14,6 +14,7 @@ import Turnstile from 'react-turnstile';
 import { Navbar } from '@/components/Navbar';
 import { SocialUrlsInput } from '@/components/admin/SocialUrlsInput';
 import { InstallUrlsInput, type InstallUrlEntry } from '@/components/admin/InstallUrlsInput';
+import { FlagDisplay } from '@/components/FlagDisplay';
 
 
 const PLATFORM_OPTIONS = ['Android', 'iOS', 'Windows', 'macOS', 'Linux', 'Web'];
@@ -21,6 +22,7 @@ const APP_CONTENT_TYPES = ['Anime', 'Manga', 'Light Novel', 'Webtoon', 'Comics']
 const EXT_CONTENT_TYPES = ['Anime', 'Manga', 'Light Novel'];
 const APP_TAGS = ['Free', 'Paid', 'Open Source', 'Ad-free', 'NSFW', 'Reader', 'Tracker', 'Downloader'];
 const EXT_TAGS = ['NSFW', 'SFW', 'Official', 'Fan Source'];
+const LANGUAGE_OPTIONS = ['all', 'en', 'es', 'fr', 'pt', 'pt-BR', 'ja', 'zh', 'ar', 'de', 'it', 'ru', 'tr', 'vi', 'id'];
 
 export function SubmitPage() {
   const navigate = useNavigate();
@@ -467,12 +469,20 @@ export function SubmitPage() {
                   />
                 </AdminFormField>
               ) : (
-                <AdminFormField label="Language">
-                  <AdminInput
-                    value={form.language} onChange={e => setForm(f => ({ ...f, language: e.target.value }))}
-                    placeholder="en, es, multi"
-                  />
-                </AdminFormField>
+                <AdminSmartSelect
+                  label="Language"
+                  value={form.language ? form.language.split(',').map(s => s.trim()).filter(Boolean) : []}
+                  onChange={(val) => setForm(f => ({ ...f, language: val.join(', ') }))}
+                  options={LANGUAGE_OPTIONS}
+                  placeholder="Select languages..."
+                  creatable={true}
+                  renderOption={(option) => (
+                      <>
+                          <FlagDisplay region={option === 'all' ? 'global' : option} size="small" />
+                          <span>{option}</span>
+                      </>
+                  )}
+                />
               )}
             </div>
 

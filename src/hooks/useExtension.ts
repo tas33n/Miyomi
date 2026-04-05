@@ -37,6 +37,7 @@ export function useExtension(extensionId: string): { extension: ExtensionData | 
                         logoUrl: data.icon_url,
                         types: data.types || data.tags || [],
                         region: data.region || 'Global',
+                        language: data.language || '',
                         accentColor: data.accent_color || data.icon_color,
                         autoUrl: data.auto_url || '',
                         manualUrl: data.manual_url || '',

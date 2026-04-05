@@ -73,7 +73,7 @@ export function ExtensionGridCard({ extension, isHighlighted, onSelect }: Extens
             {extension.name}
           </h3>
           <div className="text-xs text-[var(--text-secondary)] flex items-center justify-center sm:justify-start gap-1.5 mb-1">
-            <FlagDisplay region={extension.region} size="small" />
+            <FlagDisplay region={extension.language || extension.region || ''} size="small" />
           </div>
           <div className="text-xs text-[var(--text-secondary)] flex items-center justify-center sm:justify-start gap-1">
             <span>{extension.types.join(' + ')}</span>

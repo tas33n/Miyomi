@@ -51,7 +51,7 @@ export function ExtensionListCard({ extension, isHighlighted, onSelect }: Extens
         </h3>
 
         <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)] mb-1">
-          <FlagDisplay region={extension.region} size="small" />
+          <FlagDisplay region={extension.language || extension.region || ''} size="small" />
           <span className="text-[var(--divider)]">|</span>
           <span className="font-['Inter',sans-serif] tracking-wide text-[11px]" style={{ fontWeight: 600 }}>
             {extension.types.join(' + ')}

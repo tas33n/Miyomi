@@ -455,15 +455,14 @@ export function ExtensionDetailPage({ extensionId, onNavigate }: ExtensionDetail
                 className="rounded-full bg-[var(--chip-bg)] px-3 py-1 font-['Inter',sans-serif] text-[var(--text-primary)] border border-[var(--divider)] flex items-center gap-1.5"
                 style={{ fontWeight: 600, fontSize: '13px' }}
               >
-                {(!extension.region || extension.region.toLowerCase() === 'all' || extension.region.toLowerCase() === 'global') ? (
+                {(!(extension.language || extension.region) || (extension.language || extension.region)?.toLowerCase() === 'all' || (extension.language || extension.region)?.toLowerCase() === 'global') ? (
                   <>
                     <Globe className="w-3.5 h-3.5" />
                     <span>Global</span>
                   </>
                 ) : (
                   <>
-                    <FlagDisplay region={extension.region} size="small" />
-                    <span>{extension.region.toUpperCase()}</span>
+                    <FlagDisplay region={extension.language || extension.region || ''} size="small" />
                   </>
                 )}
               </div>

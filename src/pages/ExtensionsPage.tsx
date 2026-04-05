@@ -41,6 +41,12 @@ export function ExtensionsPage({ onNavigate }: ExtensionsPageProps) {
     getInitialParam('type', types, 'All')
   );
 
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'All';
+    const val = new URLSearchParams(window.location.search).get('language');
+    return val || 'All';
+  });
+
   const [searchQuery, setSearchQuery] = useState(() => {
     if (typeof window === 'undefined') return '';
     return new URLSearchParams(window.location.search).get('search') || '';
@@ -112,6 +118,16 @@ export function ExtensionsPage({ onNavigate }: ExtensionsPageProps) {
   }, []);
   const { extensions: unifiedExtensions, loading } = useExtensions();
 
+  const availableLanguages = useMemo(() => {
+    const langs = new Set<string>();
+    unifiedExtensions.forEach(ext => {
+      const codeStr = ext.language || ext.region || '';
+      if (!codeStr || codeStr.toLowerCase() === 'all' || codeStr.toLowerCase() === 'global') return;
+      codeStr.split(',').forEach(c => langs.add(c.trim().toLowerCase()));
+    });
+    return ['All', ...Array.from(langs).sort()];
+  }, [unifiedExtensions]);
+
 
 
   useEffect(() => {
@@ -123,6 +139,9 @@ export function ExtensionsPage({ onNavigate }: ExtensionsPageProps) {
     }
     if (selectedType !== 'All') {
       params.set('type', selectedType);
+    }
+    if (selectedLanguage !== 'All') {
+      params.set('language', selectedLanguage);
     }
     if (sortBy !== 'name-asc') {
       params.set('sort', sortBy);
@@ -139,7 +158,7 @@ export function ExtensionsPage({ onNavigate }: ExtensionsPageProps) {
     const currentUrl = `${window.location.pathname}${window.location.search}`;
 
     window.history.replaceState({}, '', newUrl);
-  }, [selectedApp, selectedType, sortBy, view, searchQuery]);
+  }, [selectedApp, selectedType, selectedLanguage, sortBy, view, searchQuery]);
 
   const filteredAndSortedExtensions = useMemo(() => {
     let filtered = unifiedExtensions.filter((ext) => {
@@ -153,6 +172,13 @@ export function ExtensionsPage({ onNavigate }: ExtensionsPageProps) {
         return false;
       }
 
+      if (selectedLanguage !== 'All') {
+        const extLang = (ext.language || ext.region || '').toLowerCase();
+        const extLangs = extLang.split(',').map(l => l.trim());
+        if (!extLangs.includes(selectedLanguage.toLowerCase()) && !extLangs.includes('all') && !extLangs.includes('global')) {
+          return false;
+        }
+      }
 
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -193,7 +219,7 @@ export function ExtensionsPage({ onNavigate }: ExtensionsPageProps) {
     });
 
     return filtered;
-  }, [unifiedExtensions, selectedApp, selectedType, searchQuery, sortBy, getLikeData]);
+  }, [unifiedExtensions, selectedApp, selectedType, selectedLanguage, searchQuery, sortBy, getLikeData]);
 
 
   useEffect(() => {
@@ -264,7 +290,7 @@ export function ExtensionsPage({ onNavigate }: ExtensionsPageProps) {
       {/* Filters and Search */}
       <div className="grid gap-2 grid-cols-1 md:grid-cols-2 mb-6 sm:mb-8 space-y-4">
         {/* Dropdowns */}
-        <div className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
           <FilterDropdown
             label="App Compatibility"
             value={selectedApp}
@@ -276,6 +302,12 @@ export function ExtensionsPage({ onNavigate }: ExtensionsPageProps) {
             value={selectedType}
             options={types}
             onChange={setSelectedType}
+          />
+          <FilterDropdown
+            label="Language"
+            value={selectedLanguage === 'All' ? 'All' : selectedLanguage.toUpperCase()}
+            options={availableLanguages.map(l => l === 'All' ? 'All' : l.toUpperCase())}
+            onChange={(val) => setSelectedLanguage(val === 'All' ? 'All' : val.toLowerCase())}
           />
           <FilterDropdown
             label="Sort By"
