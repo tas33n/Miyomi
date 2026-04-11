@@ -39,7 +39,6 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Verify caller with anon client
     const supabaseAnon = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -67,7 +66,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { action, email, password, display_name, role } = await req.json();
+    const { action, email, password, display_name, role, user_id } = await req.json();
 
     if (action === "create") {
       if (!email || !password) {
@@ -87,7 +86,7 @@ Deno.serve(async (req) => {
       if (createError) {
         console.error("Create user error:", createError.message);
         return new Response(
-          JSON.stringify({ error: "Failed to create user" }),
+          JSON.stringify({ error: createError.message || "Failed to create user" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -96,18 +95,36 @@ Deno.serve(async (req) => {
       const assignRole = role || "admin";
 
       // Assign role
-      await supabaseAdmin.from("user_roles").insert({
+      const { error: roleError } = await supabaseAdmin.from("user_roles").insert({
         user_id: userId,
         role: assignRole,
       });
 
-      // Add to admins table
-      await supabaseAdmin.from("admins").insert({
+      if (roleError) {
+        console.error("Assign role error:", roleError.message);
+        await supabaseAdmin.auth.admin.deleteUser(userId);
+        return new Response(
+          JSON.stringify({ error: "Failed to assign role: " + roleError.message }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { error: adminError } = await supabaseAdmin.from("admins").insert({
         email,
         user_id: userId,
         is_active: true,
         display_name: display_name || null,
       });
+
+      if (adminError) {
+        console.error("Insert admin error:", adminError.message);
+        await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
+        await supabaseAdmin.auth.admin.deleteUser(userId);
+        return new Response(
+          JSON.stringify({ error: "Failed to create admin record: " + adminError.message }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       return new Response(
         JSON.stringify({ success: true, userId }),
@@ -115,6 +132,52 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ─── UPDATE ───
+    if (action === "update") {
+      if (!user_id) {
+        return new Response(
+          JSON.stringify({ error: "user_id is required for update" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Update display_name in admins table
+      if (display_name !== undefined) {
+        await supabaseAdmin
+          .from("admins")
+          .update({ display_name: display_name || null })
+          .eq("user_id", user_id);
+      }
+
+      // Update role if provided
+      if (role) {
+        await supabaseAdmin
+          .from("user_roles")
+          .update({ role })
+          .eq("user_id", user_id);
+      }
+
+      // Reset password if provided
+      if (password) {
+        const { error: pwError } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
+          password,
+        });
+        if (pwError) {
+          console.error("Password reset error:", pwError.message);
+          return new Response(
+            JSON.stringify({ error: "Failed to reset password: " + pwError.message }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ─── DELETE ───
     if (action === "delete") {
       if (!email) {
         return new Response(
@@ -123,7 +186,6 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Find user by email via the admins table (no need to load auth users)
       const { data: adminEntry } = await supabaseAdmin
         .from("admins")
         .select("user_id")
@@ -131,7 +193,6 @@ Deno.serve(async (req) => {
         .single();
 
       if (adminEntry?.user_id) {
-        // Prevent deleting yourself
         if (adminEntry.user_id === caller.id) {
           return new Response(
             JSON.stringify({ error: "Cannot delete your own account" }),
@@ -139,11 +200,9 @@ Deno.serve(async (req) => {
           );
         }
 
-        // Remove role and admin entry
         await supabaseAdmin.from("user_roles").delete().eq("user_id", adminEntry.user_id);
         await supabaseAdmin.from("admins").delete().eq("user_id", adminEntry.user_id);
       } else {
-        // Just remove from admins table by email
         await supabaseAdmin.from("admins").delete().eq("email", email);
       }
 
@@ -154,7 +213,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ error: "Invalid action. Use 'create' or 'delete'" }),
+      JSON.stringify({ error: "Invalid action. Use 'create', 'update', or 'delete'" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
