@@ -5,6 +5,7 @@ import { LikeProvider } from "./context/LikeContext";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { NoticeBanner } from "./components/NoticeBanner";
+import { QuotaRibbon } from "./components/QuotaRibbon";
 import { HomePage } from "./pages/HomePage";
 import { SoftwarePage } from "./pages/SoftwarePage";
 import { ExtensionsPage } from "./pages/ExtensionsPage";
@@ -157,6 +158,7 @@ function AppContent() {
       {/* Main Content */}
       <main className="flex-1 px-4 sm:px-8 lg:px-[120px] pt-24 pb-12">
         <NoticeBanner />
+        <QuotaRibbon />
         <Routes>
           <Route
             path="/"

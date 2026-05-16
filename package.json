@@ -96,6 +96,8 @@
     },
     "scripts": {
         "dev": "vite",
+        "sync-donations": "node scripts/sync-donations.js",
+        "prebuild": "npm run sync-donations",
         "build": "vite build",
         "preview": "vite preview",
         "build:dev": "vite build --mode development"

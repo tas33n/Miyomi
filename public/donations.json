@@ -1,0 +1,346 @@
+{
+  "goal": {
+    "title": "Help Keep Miyomi Running",
+    "currency": "USD",
+    "description": "Help us cover our monthly server and infrastructure costs so Miyomi stays free for everyone.",
+    "targetAmount": 325,
+    "currentAmount": 100
+  },
+  "paymentMethods": [
+    {
+      "id": "paypal",
+      "url": "https://www.paypal.me/sarlotte01",
+      "type": "link",
+      "label": "PayPal",
+      "details": {
+        "email": "",
+        "instructions": "Send to our PayPal email address"
+      },
+      "enabled": true,
+      "iconHint": "paypal",
+      "description": "Send via PayPal (International)"
+    },
+    {
+      "id": "kofi",
+      "url": "https://ko-fi.com/miyomi",
+      "type": "link",
+      "label": "Ko-fi",
+      "details": {},
+      "enabled": false,
+      "iconHint": "kofi",
+      "description": "Buy us a coffee"
+    },
+    {
+      "id": "buymeacoffee",
+      "url": "#",
+      "type": "link",
+      "label": "Buy Me a Coffee",
+      "details": {},
+      "enabled": false,
+      "iconHint": "buymeacoffee",
+      "description": "Support via BMC"
+    },
+    {
+      "id": "patreon",
+      "url": "https://www.patreon.com/c/Miyomi",
+      "type": "link",
+      "label": "Patreon",
+      "details": {},
+      "enabled": true,
+      "iconHint": "patreon",
+      "description": "Monthly support via Patreon"
+    },
+    {
+      "id": "github_sponsors",
+      "url": "#",
+      "type": "link",
+      "label": "GitHub Sponsors",
+      "details": {},
+      "enabled": false,
+      "iconHint": "github",
+      "description": "Sponsor us on GitHub"
+    },
+    {
+      "id": "stripe",
+      "url": "#",
+      "type": "link",
+      "label": "Stripe",
+      "details": {},
+      "enabled": false,
+      "iconHint": "stripe",
+      "description": "Credit/Debit Card (International)"
+    },
+    {
+      "id": "wise",
+      "url": "#",
+      "type": "details",
+      "label": "Wise (TransferWise)",
+      "details": {
+        "email": "",
+        "instructions": "Send via Wise to our email"
+      },
+      "enabled": false,
+      "iconHint": "wise",
+      "description": "Low-fee international transfer"
+    },
+    {
+      "id": "crypto_btc",
+      "url": "#",
+      "type": "details",
+      "label": "Bitcoin (BTC)",
+      "details": {
+        "address": "1NkdEnCcKtqgx29eAKF2ip7Gg6GggGZRd7",
+        "network": "Bitcoin (BTC)",
+        "instructions": "Send BTC to the address below"
+      },
+      "enabled": true,
+      "iconHint": "bitcoin",
+      "description": "Send BTC directly"
+    },
+    {
+      "id": "crypto_eth",
+      "url": "#",
+      "type": "details",
+      "label": "Ethereum (ETH)",
+      "details": {
+        "address": "",
+        "network": "Ethereum (ERC-20)",
+        "instructions": "Send ETH to the address below"
+      },
+      "enabled": false,
+      "iconHint": "ethereum",
+      "description": "Send ETH directly"
+    },
+    {
+      "id": "crypto_usdt",
+      "url": "#",
+      "type": "details",
+      "label": "USDT (Tether)",
+      "details": {
+        "address": "TYwuVY1uqckdzgwKd53vMTefeDR8myL9WL",
+        "network": "TRC-20",
+        "qrCodeUrl": "",
+        "instructions": "Send USDT to the address below. Specify network."
+      },
+      "enabled": true,
+      "iconHint": "usdt",
+      "description": "Send USDT (TRC20 ONLY)"
+    },
+    {
+      "id": "bkash",
+      "url": "#",
+      "type": "details",
+      "label": "bKash",
+      "details": {
+        "email": "farhanisteak84@gmail.com",
+        "number": "+880 1650-078236",
+        "accountName": "",
+        "instructions": "Send Money to this bKash number"
+      },
+      "enabled": true,
+      "iconHint": "bkash",
+      "description": "Send via bKash (Bangladesh)"
+    },
+    {
+      "id": "nagad",
+      "url": "#",
+      "type": "details",
+      "label": "Nagad",
+      "details": {
+        "number": "",
+        "accountName": "",
+        "instructions": "Send Money to this Nagad number"
+      },
+      "enabled": false,
+      "iconHint": "nagad",
+      "description": "Send via Nagad (Bangladesh)"
+    },
+    {
+      "id": "rocket",
+      "url": "#",
+      "type": "details",
+      "label": "Rocket (DBBL)",
+      "details": {
+        "number": "",
+        "accountName": "",
+        "instructions": "Send Money to this Rocket number"
+      },
+      "enabled": false,
+      "iconHint": "rocket",
+      "description": "Send via Rocket (Bangladesh)"
+    },
+    {
+      "id": "upay",
+      "url": "#",
+      "type": "details",
+      "label": "Upay",
+      "details": {
+        "number": "",
+        "accountName": "",
+        "instructions": "Send Money to this Upay number"
+      },
+      "enabled": false,
+      "iconHint": "upay",
+      "description": "Send via Upay (Bangladesh)"
+    },
+    {
+      "id": "upi",
+      "url": "#",
+      "type": "details",
+      "label": "UPI",
+      "details": {
+        "address": "",
+        "instructions": "Pay using any UPI app to this UPI ID"
+      },
+      "enabled": false,
+      "iconHint": "upi",
+      "description": "Google Pay / PhonePe / Paytm (India)"
+    },
+    {
+      "id": "paytm",
+      "url": "#",
+      "type": "details",
+      "label": "Paytm",
+      "details": {
+        "number": "",
+        "instructions": "Send to this Paytm number"
+      },
+      "enabled": false,
+      "iconHint": "paytm",
+      "description": "Send via Paytm (India)"
+    },
+    {
+      "id": "razorpay",
+      "url": "#",
+      "type": "link",
+      "label": "Razorpay",
+      "details": {},
+      "enabled": false,
+      "iconHint": "razorpay",
+      "description": "Card/UPI/Netbanking (India)"
+    },
+    {
+      "id": "gcash",
+      "url": "#",
+      "type": "details",
+      "label": "GCash",
+      "details": {
+        "number": "09155456010",
+        "accountName": "Charlotte Regidor",
+        "instructions": "Send to this GCash number"
+      },
+      "enabled": true,
+      "iconHint": "gcash",
+      "description": "Send via GCash (Philippines)"
+    },
+    {
+      "id": "maya",
+      "url": "#",
+      "type": "details",
+      "label": "Maya (PayMaya)",
+      "details": {
+        "number": "",
+        "accountName": "",
+        "instructions": "Send to this Maya number"
+      },
+      "enabled": false,
+      "iconHint": "maya",
+      "description": "Send via Maya (Philippines)"
+    },
+    {
+      "id": "grabpay",
+      "url": "#",
+      "type": "details",
+      "label": "GrabPay",
+      "details": {
+        "number": "",
+        "instructions": "Send to this GrabPay account"
+      },
+      "enabled": false,
+      "iconHint": "grabpay",
+      "description": "Send via GrabPay (SEA)"
+    },
+    {
+      "id": "dana",
+      "url": "#",
+      "type": "details",
+      "label": "DANA",
+      "details": {
+        "number": "",
+        "instructions": "Send to this DANA number"
+      },
+      "enabled": false,
+      "iconHint": "dana",
+      "description": "Send via DANA (Indonesia)"
+    },
+    {
+      "id": "gopay",
+      "url": "#",
+      "type": "details",
+      "label": "GoPay",
+      "details": {
+        "number": "",
+        "instructions": "Send to this GoPay number"
+      },
+      "enabled": false,
+      "iconHint": "gopay",
+      "description": "Send via GoPay (Indonesia)"
+    },
+    {
+      "id": "bank_transfer",
+      "url": "#",
+      "type": "details",
+      "label": "Bank Transfer",
+      "details": {
+        "number": "",
+        "accountName": "",
+        "instructions": "Transfer to our bank account. Contact us for SWIFT/IBAN details."
+      },
+      "enabled": false,
+      "iconHint": "bank",
+      "description": "Direct bank wire transfer"
+    },
+    {
+      "id": "contact_team",
+      "url": "#",
+      "type": "details",
+      "label": "Contact Team Directly",
+      "details": {
+        "email": "miyomi.info@gmail.com",
+        "instructions": "Want to use a different payment method or contribute directly? Reach out to our team and we will work something out!"
+      },
+      "enabled": true,
+      "iconHint": "contact",
+      "description": "Reach out for custom payment options"
+    }
+  ],
+  "transparencyItems": [
+    {
+      "label": "Supabase (Database & Edge Functions)",
+      "value": "~$25/month, ~300/year"
+    },
+    {
+      "label": "Domain & DNS",
+      "value": " ~$20/year"
+    },
+    {
+      "label": "CDN & Hosting",
+      "value": "Free (Cloudflare)"
+    }
+  ],
+  "display": {
+    "showDonationAmounts": true,
+    "transparencyLastUpdated": "May 2026"
+  },
+  "donators": [
+    {
+      "name": "Mikio",
+      "amount": 20,
+      "currency": "USD",
+      "message": "I'm first :3",
+      "date": "2026-05-14",
+      "isPublic": true,
+      "showAmount": true
+    }
+  ]
+}

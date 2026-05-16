@@ -15,6 +15,18 @@ export const supabase = SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY
       storage: REMEMBER_SESSION ? localStorage : sessionStorage,
       persistSession: true,
       autoRefreshToken: true,
+    },
+    global: {
+      fetch: async (url, options) => {
+        const response = await fetch(url, options);
+        if ([402, 429, 500, 503].includes(response.status)) {
+          window.dispatchEvent(new CustomEvent('supabase-error', { detail: { status: response.status } }));
+        }
+        if (response.status === 402) {
+          window.dispatchEvent(new CustomEvent('supabase-quota-exceeded'));
+        }
+        return response;
+      }
     }
   })
   : null as unknown as ReturnType<typeof createClient<Database>>;

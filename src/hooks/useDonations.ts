@@ -52,11 +52,14 @@ export function useDonations(): UseDonationsReturn {
       let showAmounts = true;
       let lastUpdated = '';
 
+      let jsonFallbackUsed = false;
       try {
         // 1. Fetch settings from Supabase (always)
-        const { data: settings } = await supabase
+        const { data: settings, error: settingsError } = await supabase
           .from('donation_settings')
           .select('*');
+          
+        if (settingsError) throw settingsError;
 
         if (settings) {
           for (const s of settings) {
@@ -72,11 +75,13 @@ export function useDonations(): UseDonationsReturn {
         }
 
         // 2. Fetch donations from Supabase (always)
-        const { data: rows } = await supabase
+        const { data: rows, error: rowsError } = await supabase
           .from('donations')
           .select('*')
           .eq('is_public', true)
           .order('created_at', { ascending: false });
+          
+        if (rowsError) throw rowsError;
 
         if (rows && rows.length > 0) {
           donators = rows.map((r: any) => ({
@@ -90,17 +95,37 @@ export function useDonations(): UseDonationsReturn {
             showAmount: r.show_amount,
           }));
         }
-      } catch {
-        // Supabase unavailable — try JSON fallback for donators only
+      } catch (e) {
+        // Supabase unavailable — use full JSON fallback
+        console.warn("Using JSON fallback for donations due to Supabase error", e);
+        jsonFallbackUsed = true;
       }
 
-      // 3. JSON fallback for donators ONLY if Supabase returned zero
-      if (donators.length === 0) {
+      // 3. JSON fallback if Supabase failed or returned zero donators
+      if (jsonFallbackUsed || donators.length === 0) {
         try {
-          const r = await fetch('/donators.json');
+          // Try standard donations.json first
+          let r = await fetch('/donations.json');
+          if (!r.ok) {
+            // Fallback to old donators.json if donations.json doesn't exist
+            r = await fetch('/donators.json');
+          }
+          
           if (r.ok) {
             const json = await r.json();
-            if (json?.donators) {
+            
+            if (jsonFallbackUsed) {
+              // Only override everything if Supabase completely failed
+              if (json.goal) goal = json.goal;
+              if (json.paymentMethods) methods = json.paymentMethods;
+              if (json.transparencyItems) transparency = json.transparencyItems;
+              if (json.display) {
+                showAmounts = json.display.showDonationAmounts ?? true;
+                lastUpdated = json.display.transparencyLastUpdated ?? '';
+              }
+            }
+            
+            if (json.donators) {
               donators = json.donators
                 .filter((d: any) => d.isPublic !== false)
                 .map((d: any) => ({ ...d, id: undefined }));
